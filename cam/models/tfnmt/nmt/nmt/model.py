@@ -79,14 +79,15 @@ class BaseModel(object):
 
     # Embeddings
     # TODO(ebrevdo): Only do this if the mode is TRAIN?
-    self.init_embeddings(hparams, scope)
+    #self.init_embeddings(hparams, scope)
     self.batch_size = tf.size(self.iterator.source_sequence_length)
 
     # Projection
     with tf.variable_scope(scope or "build_network"):
       with tf.variable_scope("decoder/output_projection"):
-        self.output_layer = layers_core.Dense(
-            hparams.tgt_vocab_size, use_bias=False, name="output_projection")
+        #self.output_layer = layers_core.Dense(
+        #    hparams.tgt_vocab_size, use_bias=False, name="output_projection")
+        self.output_layer = lambda x: x
 
     # To make it flexible for external code to add other cell types
     # If not specified, we will later use model_helper._single_cell
@@ -94,6 +95,7 @@ class BaseModel(object):
 
     ## Train graph
     res = self.build_graph(hparams, scope=scope)
+    self.logits = res[0]
 
     if self.mode == tf.contrib.learn.ModeKeys.TRAIN:
       self.train_loss = res[1]
@@ -113,9 +115,9 @@ class BaseModel(object):
           self.iterator.target_sequence_length)
 
     ## Learning rate
-    print("  start_decay_step=%d, learning_rate=%g, decay_steps %d,"
-          "decay_factor %g" % (hparams.start_decay_step, hparams.learning_rate,
-                               hparams.decay_steps, hparams.decay_factor))
+    #print("  start_decay_step=%d, learning_rate=%g, decay_steps %d,"
+    #      "decay_factor %g" % (hparams.start_decay_step, hparams.learning_rate,
+    #                           hparams.decay_steps, hparams.decay_factor))
     self.global_step = tf.Variable(0, trainable=False)
 
     params = tf.trainable_variables()
@@ -233,11 +235,12 @@ class BaseModel(object):
           encoder_outputs, encoder_state, hparams)
 
       ## Loss
-      if self.mode != tf.contrib.learn.ModeKeys.INFER:
-        with tf.device(model_helper.get_device_str(num_layers - 1, num_gpus)):
-          loss = self._compute_loss(logits)
-      else:
-        loss = None
+      #if self.mode != tf.contrib.learn.ModeKeys.INFER:
+      #  with tf.device(model_helper.get_device_str(num_layers - 1, num_gpus)):
+      #    loss = self._compute_loss(logits)
+      #else:
+      #  loss = None
+      loss = None
 
       return logits, loss, final_context_state, sample_id
 
@@ -316,8 +319,9 @@ class BaseModel(object):
         target_input = iterator.target_input
         if self.time_major:
           target_input = tf.transpose(target_input)
-        decoder_emb_inp = tf.nn.embedding_lookup(
-            self.embedding_decoder, target_input)
+        #decoder_emb_inp = tf.nn.embedding_lookup(
+        #    self.embedding_decoder, target_input)
+        decoder_emb_inp = target_input
 
         # Helper
         helper = tf.contrib.seq2seq.TrainingHelper(
@@ -482,8 +486,9 @@ class Model(BaseModel):
     with tf.variable_scope("encoder") as scope:
       dtype = scope.dtype
       # Look up embedding, emp_inp: [max_time, batch_size, num_units]
-      encoder_emb_inp = tf.nn.embedding_lookup(
-          self.embedding_encoder, source)
+      #encoder_emb_inp = tf.nn.embedding_lookup(
+      #    self.embedding_encoder, source)
+      encoder_emb_inp = source
 
       # Encoder_outpus: [max_time, batch_size, num_units]
       if hparams.encoder_type == "uni":
