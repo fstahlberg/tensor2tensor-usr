@@ -34,6 +34,11 @@ class TFNmt(t2t_model.T2TModel):
     targets = common_layers.flatten4d3d(targets)
     inputs_length = cam_utils.get_sequence_length(inputs)
     targets_length = cam_utils.get_sequence_length(targets)
+    # We need to do +1 for inference since the get_sequence_length()
+    # does not have direct access to sequence lengths and returns
+    # a length of 0 for the first inference step. 
+    if hparams.mode == tf.contrib.learn.ModeKeys.INFER:
+      targets_length = targets_length + 1
     tfnmt_model = get_tfnmt_model(
         hparams, inputs, inputs_length, targets, targets_length)
     decoder_output = tfnmt_model.logits

@@ -118,7 +118,7 @@ class BaseModel(object):
     #print("  start_decay_step=%d, learning_rate=%g, decay_steps %d,"
     #      "decay_factor %g" % (hparams.start_decay_step, hparams.learning_rate,
     #                           hparams.decay_steps, hparams.decay_factor))
-    self.global_step = tf.Variable(0, trainable=False)
+    #self.global_step = tf.Variable(0, trainable=False)
 
     params = tf.trainable_variables()
 
