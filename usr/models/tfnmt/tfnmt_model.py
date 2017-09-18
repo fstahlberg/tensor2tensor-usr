@@ -12,11 +12,11 @@ inside T2T.
 from tensor2tensor.utils import registry
 from tensor2tensor.utils import t2t_model
 from tensor2tensor.layers import common_layers
-from cam import utils as cam_utils
-from cam.models.tfnmt.nmt.nmt import attention_model
-from cam.models.tfnmt.nmt.nmt import gnmt_model
-from cam.models.tfnmt.nmt.nmt import model as nmt_model
-from cam.models.tfnmt.nmt.nmt.utils import iterator_utils
+from usr import utils as usr_utils
+from usr.models.tfnmt.nmt.nmt import attention_model
+from usr.models.tfnmt.nmt.nmt import gnmt_model
+from usr.models.tfnmt.nmt.nmt import model as nmt_model
+from usr.models.tfnmt.nmt.nmt.utils import iterator_utils
 
 import tensorflow as tf
 
@@ -32,8 +32,8 @@ class TFNmt(t2t_model.T2TModel):
     # inputs/targets shape: (batch_size, [src|trg]_max_len, 1, embed_size)
     inputs = common_layers.flatten4d3d(inputs)
     targets = common_layers.flatten4d3d(targets)
-    inputs_length = cam_utils.get_sequence_length(inputs)
-    targets_length = cam_utils.get_sequence_length(targets)
+    inputs_length = usr_utils.get_sequence_length(inputs)
+    targets_length = usr_utils.get_sequence_length(targets)
     # We need to do +1 for inference since the get_sequence_length()
     # does not have direct access to sequence lengths and returns
     # a length of 0 for the first inference step. 
