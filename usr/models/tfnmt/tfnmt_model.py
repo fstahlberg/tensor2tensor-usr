@@ -112,7 +112,7 @@ def get_fake_iterator(inputs, inputs_length, targets, targets_length):
   return iterator_utils.BatchedInput(
       initializer=None,
       source=inputs,
-      target_input=common_layers.shift_left_3d(targets),
+      target_input=common_layers.shift_right_3d(targets),
       target_output=None, # Loss is computed in T2T
       source_sequence_length=inputs_length,
       target_sequence_length=targets_length)
