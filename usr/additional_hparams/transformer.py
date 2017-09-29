@@ -8,8 +8,6 @@ from __future__ import print_function
 from tensor2tensor.utils import registry
 from tensor2tensor.models.transformer import transformer_base
 
-import tensorflow as tf
-
 
 @registry.register_hparams
 def transformer_base_12gb_gpu():

@@ -6,9 +6,16 @@ import sys
 #try:
 if True:
   # TF-NMT
-  from usr.models.tfnmt import tfnmt_model
-  from usr.models.tfnmt import tfnmt_hparams
-  from usr.additional_hparams import transformer
+  import usr.models.tfnmt.model
+  import usr.models.tfnmt.hparams
+  
+  # Layer-by-layer models
+  import usr.models.layerbylayer.model
+  import usr.models.layerbylayer.hparams
+  import usr.models.layerbylayer.problem
+  
+  # Additional hparams for standard T2T models
+  import usr.additional_hparams.transformer
 #except ImportError as e:
 #  sys.exit("Import error: %s. Double-check that %s is in your PYTHONPATH"
 #           % (e, os.path.dirname(os.path.realpath(__file__))))

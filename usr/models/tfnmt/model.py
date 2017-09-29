@@ -1,3 +1,4 @@
+# coding=utf-8
 """TF-NMT models for T2T.
 
 This class contains an adaptor model implementation for using models from the

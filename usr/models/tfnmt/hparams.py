@@ -1,9 +1,9 @@
+# coding=utf-8
 """Hyper parameter sets for TF-NMT.
 
 This file contains the standard hyperparameters in the TF-NMT tutorial.
 """
 
-from tensor2tensor.models import transformer
 from tensor2tensor.utils import registry
 from tensor2tensor.layers import common_hparams
 
