@@ -39,6 +39,8 @@ class TFNmt(t2t_model.T2TModel):
     # a length of 0 for the first inference step. 
     if hparams.mode == tf.contrib.learn.ModeKeys.INFER:
       targets_length = targets_length + 1
+    # inputs_length of 0 breaks things
+    inputs_length = tf.maximum(inputs_length, 1)
     tfnmt_model = get_tfnmt_model(
         hparams, inputs, inputs_length, targets, targets_length)
     decoder_output = tfnmt_model.logits
