@@ -14,8 +14,9 @@ if True:
   import usr.models.layerbylayer.hparams
   import usr.models.layerbylayer.problem
   
-  # Additional hparams for standard T2T models
-  import usr.additional_hparams.transformer
+  # Additional hparams and problems for standard T2T models
+  import usr.configs.hparams
+  import usr.configs.problem
 #except ImportError as e:
 #  sys.exit("Import error: %s. Double-check that %s is in your PYTHONPATH"
 #           % (e, os.path.dirname(os.path.realpath(__file__))))

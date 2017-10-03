@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Additional hparams for the transformer model."""
+"""Additional hparams for standard T2T models."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -18,3 +18,15 @@ def transformer_base_12gb_gpu():
   hparams.batch_size = 8192
   return hparams
 
+
+@registry.register_hparams
+def transformer_base_12gb_gpu_large_batch():
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
+  
+  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
+  """
+  hparams = transformer_base()
+  hparams.batch_size = 4096
+  hparams.batch_size_multiplier = 8
+  hparams.optimizer = "LargebatchAdam"
+  return hparams
