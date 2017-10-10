@@ -67,7 +67,13 @@ def convert_to_tfnmt_hparams(hparams):
   accessible via T2T. This method extends the T2T hparams for using 
   them in the TF-NMT subpackage.
   """
-  hparams.add_hparam("num_layers", hparams.num_hidden_layers)
+  try:
+    hparams.add_hparam("num_layers", hparams.num_hidden_layers)
+  except ValueError:
+    # A value error occurs when hparams.num_layers already exists, for example
+    #  when using multiple GPUs. In this case we assume that hparams is
+    # already converted.
+    return hparams
   hparams.add_hparam("src_vocab_size", None)  # Not used
   hparams.add_hparam("tgt_vocab_size", None)  # Not used 
   hparams.add_hparam("num_gpus", 1)  # Not used
