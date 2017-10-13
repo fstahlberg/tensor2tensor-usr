@@ -102,6 +102,8 @@ def convert_to_tfnmt_hparams(hparams):
       # the concatenation of fw_cell and bw_cell's outputs.
       num_residual_layers = hparams.num_layers - 2
     else:
+      # Last layer cannot have residual connections since the decoder
+      # expects num_unit dimensional input
       num_residual_layers = hparams.num_layers - 1
   else:
     num_residual_layers = 0

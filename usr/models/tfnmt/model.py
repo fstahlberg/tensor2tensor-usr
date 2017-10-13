@@ -12,7 +12,7 @@ from tensor2tensor.utils import registry
 from tensor2tensor.utils import t2t_model
 from tensor2tensor.layers import common_layers
 from usr import utils as usr_utils
-from usr.models.tfnmt.nmt.nmt import attention_model
+from usr.models.tfnmt.nmt.nmt import alternating_model
 from usr.models.tfnmt.nmt.nmt import gnmt_model
 from usr.models.tfnmt.nmt.nmt import model as nmt_model
 from usr.models.tfnmt.nmt.nmt.utils import iterator_utils
@@ -44,14 +44,12 @@ class TFNmt(t2t_model.T2TModel):
     return tf.expand_dims(decoder_output, axis=2)
 
 
-
-
 def get_tfnmt_model(hparams, inputs, inputs_length, targets, targets_length):
   """Adapted from nmt.train.train()."""
   if not hparams.attention:
     model_class = nmt_model.Model
   elif hparams.attention_architecture == "standard":
-    model_class = attention_model.AttentionModel
+    model_class = alternating_model.AlternatingEncoderModel
   elif hparams.attention_architecture in ["gnmt", "gnmt_v2"]:
     model_class = gnmt_model.GNMTModel
   else:

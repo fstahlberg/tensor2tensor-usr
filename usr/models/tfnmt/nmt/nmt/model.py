@@ -503,9 +503,13 @@ class Model(BaseModel):
             dtype=dtype,
             sequence_length=iterator.source_sequence_length,
             time_major=self.time_major)
-      elif hparams.encoder_type == "bi":
-        num_bi_layers = int(num_layers / 2)
-        num_bi_residual_layers = int(num_residual_layers / 2)
+      elif hparams.encoder_type in ["bi", "bi2"]:
+        if hparams.encoder_type == "bi":
+          num_bi_layers = int(num_layers / 2)
+          num_bi_residual_layers = int(num_residual_layers / 2)
+        else:
+          num_bi_layers = num_layers
+          num_bi_residual_layers = num_residual_layers
         utils.print_out("  num_bi_layers = %d, num_bi_residual_layers=%d" %
                         (num_bi_layers, num_bi_residual_layers))
 

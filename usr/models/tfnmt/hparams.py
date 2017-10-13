@@ -140,3 +140,13 @@ def tfnmt_12gb_gpu():
   hparams.label_smoothing = 0.1
   hparams.batch_size = 8192
   return hparams
+
+
+@registry.register_hparams
+def tfnmt_12gb_gpu_alternating():
+  """tfnmt_12gb_gpu with alternating encoder."""
+  hparams = tfnmt_12gb_gpu()
+  hparams.residual = True
+  hparams.encoder_type = "alternating"
+  hparams.batch_size = 4096
+  return hparams

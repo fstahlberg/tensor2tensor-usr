@@ -68,3 +68,31 @@ def get_feature_with_length(features, name):
   return embed, tf.cast(length, tf.int32)
   
 
+def gather_2d(params, indices):
+  """This is a batched version of tf.gather(), ie. it applies tf.gather() to
+  each batch separately.
+
+  Example:
+    params = [[10, 11, 12, 13, 14],
+              [20, 21, 22, 23, 24]]
+    indices = [[0, 0, 1, 1, 1, 2],
+               [1, 3, 0, 0, 2, 2]]
+    result = [[10, 10, 11, 11, 11, 12],
+              [21, 23, 20, 20, 22, 22]]
+
+  Args:
+    params: A [batch_size, n, ...] tensor with data
+    indices: A [batch_size, num_indices] int32 tensor with indices into params.
+             Entries must be smaller than n
+
+  Returns:
+    The result of tf.gather() on each entry of the batch.
+  """
+  # TODO(fstahlberg): Curse TF for making this so awkward.
+  batch_size = tf.shape(params)[0]
+  num_indices = tf.shape(indices)[1]
+  batch_indices = tf.tile(tf.expand_dims(tf.range(batch_size), 1), 
+                          [1, num_indices])
+  # batch_indices is [[0,0,0,0,...],[1,1,1,1,...],...]
+  gather_nd_indices = tf.stack([batch_indices, indices], axis=2)
+  return tf.gather_nd(params, gather_nd_indices)
