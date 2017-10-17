@@ -10,6 +10,7 @@ try:
   
   # Layer-by-layer models
   import usr.models.layerbylayer.tfnmt_model
+  import usr.models.layerbylayer.transformer_model
   import usr.models.layerbylayer.hparams
   import usr.models.layerbylayer.problem
   import usr.models.layerbylayer.modalities

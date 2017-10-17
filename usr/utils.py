@@ -96,3 +96,38 @@ def gather_2d(params, indices):
   # batch_indices is [[0,0,0,0,...],[1,1,1,1,...],...]
   gather_nd_indices = tf.stack([batch_indices, indices], axis=2)
   return tf.gather_nd(params, gather_nd_indices)
+
+
+def expand_memory_by_pop(is_pop, memory, offset=1):
+  """Expands a memory according POP signals.
+
+  This method is useful when the POP attention mechanism is used. It
+  repeats entries in the memory such that we can walk through the
+  expanded memory one step at a time and obtain the correct attention.
+
+  Example (symbolic, without batch size):
+    is_pop = [False, True, False, False, True]
+    memory = [a, b, c]
+    offset = 0
+    result = [a, b, b, b, c]
+
+    is_pop = [False, True, False, False]
+    memory = [a, b, c, d]
+    offset = 1
+    result = [a, a, b, b, b]
+
+  Args:
+    is_pop: A [batch_size, max_seq_length] bool tensor with POP signals
+      The number of True values in each line must be lower than memory_length
+    memory: A [batch_size, memory_length, ...] tensor
+    offset (int): Padding width on the left. This defaults to 1 since we
+      usually want to update the attention *after* POP is produced.
+
+  Returns:
+    A [batch_size, max_seq_length+offset, ...] tensor with entries 
+    from memory, repeated according the POP signals.
+  """
+  cumsum = tf.cumsum(tf.cast(is_pop, tf.int32), axis=1)
+  indices = tf.pad(cumsum, [[0, 0], [offset, 0]])
+  return gather_2d(memory, indices)
+
