@@ -127,7 +127,26 @@ def expand_memory_by_pop(is_pop, memory, offset=1):
     A [batch_size, max_seq_length+offset, ...] tensor with entries 
     from memory, repeated according the POP signals.
   """
-  cumsum = tf.cumsum(tf.cast(is_pop, tf.int32), axis=1)
-  indices = tf.pad(cumsum, [[0, 0], [offset, 0]])
+  indices = tf.cumsum(tf.cast(is_pop, tf.int32), axis=1)
+  if offset:
+    indices = tf.pad(indices, [[0, 0], [offset, 0]])
   return gather_2d(memory, indices)
+
+
+def expand_memory_by_pop_1d(is_pop, memory, offset=1):
+  """1D version of expand_memory_by_pop.
+
+  Args:
+    is_pop: A [max_seq_length,] bool tensor with POP signals
+    memory: A [ memory_length, ...] tensor
+    offset (int): Padding width on the left.
+
+  Returns:
+    A [max_seq_length+offset, ...] tensor with entries 
+    from memory, repeated according the POP signals.
+  """
+  indices = tf.cumsum(tf.cast(is_pop, tf.int32))
+  if offset:
+    indices = tf.pad(indices, [[offset, 0]])
+  return tf.gather(memory, indices)
 

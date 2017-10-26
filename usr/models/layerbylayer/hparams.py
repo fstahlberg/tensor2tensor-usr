@@ -16,7 +16,8 @@ def transformer_layerbylayer_default():
   hparams.batch_size = 8192
   hparams.max_length = 256
   hparams.dropout = 0.0
-  hparams.clip_grad_norm = 0.  # i.e. no gradient clipping
+  #hparams.clip_grad_norm = 0.  # i.e. no gradient clipping
+  hparams.clip_grad_norm = 5.  # i.e. no gradient clipping
   hparams.optimizer_adam_epsilon = 1e-9
   hparams.learning_rate_decay_scheme = "noam"
   hparams.learning_rate = 0.1
@@ -29,7 +30,8 @@ def transformer_layerbylayer_default():
   hparams.optimizer_adam_beta2 = 0.98
   hparams.num_sampled_classes = 0
   hparams.label_smoothing = 0.1
-  hparams.shared_embedding_and_softmax_weights = int(True)
+  #hparams.shared_embedding_and_softmax_weights = int(True)
+  hparams.shared_embedding_and_softmax_weights = int(False)
 
   # Add new ones like this.
   hparams.add_hparam("filter_size", 2048)
@@ -56,8 +58,38 @@ def transformer_layerbylayer_default():
 
   # Layerbylayer defaults
   hparams.add_hparam("target_root_attention", "pop")
+  hparams.add_hparam("use_loss_mask", int(True))
   return hparams
 
+
+@registry.register_hparams
+def transformer_layerbylayer_parsing():
+  hparams = transformer_layerbylayer_default()
+  hparams.attention_dropout = 0.2
+  hparams.layer_prepostprocess_dropout = 0.2
+  hparams.learning_rate_warmup_steps = 16000
+  #hparams.hidden_size = 1024
+  hparams.hidden_size = 512
+  hparams.learning_rate = 0.05
+  hparams.shared_embedding_and_softmax_weights = int(False)
+  #hparams.add_hparam("shuffle_queue_size", 100000)
+  #hparams.batch_size = 4096
+  hparams.batch_size = 8192
+  hparams.use_loss_mask = int(False)
+  return hparams
+
+@registry.register_hparams
+def transformer_layerbylayer_parsing_v2():
+  hparams = transformer_layerbylayer_parsing()
+  hparams.shared_embedding_and_softmax_weights = int(True)
+  hparams.use_loss_mask = int(False)
+  return hparams
+
+@registry.register_hparams
+def transformer_layerbylayer_parsing_loss_mask():
+  hparams = transformer_layerbylayer_parsing_v2()
+  hparams.use_loss_mask = int(True)
+  return hparams
 
 @registry.register_hparams
 def tfnmt_layerbylayer_default():
