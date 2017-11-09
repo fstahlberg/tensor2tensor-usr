@@ -59,6 +59,30 @@ def transformer_layerbylayer_default():
   # Layerbylayer defaults
   hparams.add_hparam("target_root_attention", "pop")
   hparams.add_hparam("use_loss_mask", int(True))
+  hparams.add_hparam("target_root_input", "each") # 'each', 'first', 'last'
+  return hparams
+
+
+@registry.register_hparams
+def transformer_layerbylayer_first_only():
+  hparams = transformer_layerbylayer_default()
+  return hparams
+
+
+@registry.register_hparams
+def transformer_layerbylayer_v2():
+  hparams = transformer_layerbylayer_default()
+  hparams.target_root_input = "first"
+  hparams.layer_preprocess_sequence = "n"
+  hparams.layer_postprocess_sequence = "da"
+  hparams.layer_prepostprocess_dropout = 0.1
+  hparams.attention_dropout = 0.1
+  hparams.relu_dropout = 0.1
+  hparams.learning_rate_warmup_steps = 8000
+  hparams.learning_rate = 0.2
+
+  hparams.batch_size = 4096
+  hparams.max_length = 200
   return hparams
 
 
@@ -101,6 +125,7 @@ def tfnmt_layerbylayer_default():
   hparams.max_target_seq_length = 200  # Account for POP
   hparams.add_hparam("target_root_attention", "pop")
   hparams.add_hparam("target_root_encoder_type", "id")
+  hparams.add_hparam("use_loss_mask", int(True))
   return hparams
 
 

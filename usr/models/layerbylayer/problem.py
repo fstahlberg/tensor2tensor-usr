@@ -4,7 +4,7 @@
 import os
 
 from tensor2tensor.data_generators import text_encoder
-from tensor2tensor.data_generators.wmt import TranslateEndeWmt32k
+from tensor2tensor.data_generators.translate_ende import TranslateEndeWmt32k
 from tensor2tensor.utils import registry
 from tensor2tensor.data_generators.problem import preprocess_example_common
 from tensor2tensor.data_generators.problem import SpaceID
@@ -52,8 +52,6 @@ class AbstractLayerbylayerProblem(object):
   def preprocess_example(self, example, mode, hparams):
     # Create loss mask if necessary
     if hparams.use_loss_mask and mode == tf.estimator.ModeKeys.TRAIN:
-      indices = tf.cumsum(tf.cast(tf.equal(example["targets"], hparams.pop_id),
-                                  tf.int32))
       expanded_target_roots = usr_utils.expand_memory_by_pop_1d(
           tf.equal(example["targets"], hparams.pop_id), example["target_roots"])
       expanded_target_roots = expanded_target_roots[:-1]  # Compensate for offset
@@ -92,52 +90,12 @@ class AbstractLayerbylayerProblem(object):
       p.loss_multiplier = 2.0
     # Lookup POP id.
     if model_hparams.target_root_attention == "pop":
-      if not hasattr(model_hparams, 'pop_id'):
-        try:
-          pop_id = _get_string_to_id(self._encoders["targets"])[POP]
-        except KeyError as e:
-          tf.logging.fatal("%s could not be found in the target vocabulary! "
-                          "Please either add %s to the vocabulary file or "
-                          "specify the POP ID directly with hparams.pop_id"
-                          % (POP, POP))
-          raise e
-        tf.logging.info("Use ID %d for pop signal %s", pop_id, POP)
-        model_hparams.add_hparam("pop_id", pop_id)
+      usr_utils.look_up_token_id(self._encoders["targets"], "pop_id", POP, model_hparams)
     # Extract maximum terminal ID
     if model_hparams.use_loss_mask:
-      if not hasattr(model_hparams, 'max_terminal_id'):
-        string_to_id = _get_string_to_id(self._encoders["target_roots"])
-        max_terminal_id = 0
-        min_nonterminal_id = 1000000
-        for s, i in string_to_id.iteritems():
-          if s[:2] == "##" and s[-2:] == "##":
-            min_nonterminal_id = min(min_nonterminal_id, i)
-          else:
-            max_terminal_id = max(max_terminal_id, i)
-        if min_nonterminal_id != max_terminal_id + 1:
-          tf.logging.warn("Overlapping non-terminal and terminal ID "
-                          "ranges: min nonterminal is %d" % min_nonterminal_id)
-        tf.logging.info("Set maximum terminal ID to %d", max_terminal_id)
-        model_hparams.add_hparam("max_terminal_id", max_terminal_id)
+      usr_utils.extract_max_terminal_id(self._encoders["target_roots"], model_hparams)
 
 
-def _get_string_to_id(encoder):
-  """Get a dictionary from string representations to token ID for
-  the encoder. This is a hack and only works for subword and token encoders.
-  """
-  try:
-    return encoder._subtoken_string_to_id
-  except AttributeError:
-    try:
-      return encoder._token_to_id
-    except AttributeError as e:
-      tf.logging.fatal("Could not read encoder vocabulary. Please either "
-                        "use the Subword or Token encoder or specify "
-                        "the POP ID and maximum terminal ID directly with "
-                         "hparams.pop_id and hparams.max_terminal_id.")
-      raise e
-
-  
 @registry.register_problem
 class TranslateLayerbylayerPopEndeWmt32k(AbstractLayerbylayerProblem, TranslateEndeWmt32k):
   pass

@@ -179,7 +179,8 @@ def transformer_decoder(decoder_input,
   # Remove artefact from offset=1
   extended_target_roots = extended_target_roots[:,:-1,:]
   # Use target roots as additional input
-  x += extended_target_roots
+  if hparams.target_root_input in ["each", "first"]:
+    x += extended_target_roots
   with tf.variable_scope(name):
     for layer in xrange(hparams.num_decoder_layers or
                         hparams.num_hidden_layers):
@@ -213,11 +214,14 @@ def transformer_decoder(decoder_input,
                 hparams.attention_dropout)
             x = common_layers.layer_postprocess(x, y, hparams)
         # Add target roots without pre- or postprocessing
-        x += extended_target_roots
+        if hparams.target_root_input == "each":
+          x += extended_target_roots
         with tf.variable_scope("ffn"):
           y = transformer_ffn_layer(
               common_layers.layer_preprocess(x, hparams), hparams)
           x = common_layers.layer_postprocess(x, y, hparams)
+    if hparams.target_root_input == "last":
+      x += extended_target_roots
     # if normalization is done in layer_preprocess, then it shuold also be done
     # on the output, since the output can grow very large, being the sum of
     # a whole stack of unnormalized layer outputs.

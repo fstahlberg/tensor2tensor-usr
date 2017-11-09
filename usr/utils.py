@@ -66,6 +66,29 @@ def get_feature_with_length(features, name):
   indices = tf.where(tf.logical_not(not_padding_with_guardian))
   length = tf.segment_min(indices[:, 1], indices[:, 0])
   return embed, tf.cast(length, tf.int32)
+
+
+def get_length_from_raw(raw_x):
+  """Extracts sequence lengths from the raw feature.
+
+  Example:
+    raw_x = [
+      [123, 3, 2, 0, 0],
+      [321, 1, 0, 0, 0]]
+    return:
+      [3, 2]
+
+  Args:
+    raw_x: A [batch_size, max_length] int32 tensor
+  
+  Returns:
+    A [batch_size] int32 tensor with sequence lengths
+  """
+  not_padding = tf.not_equal(raw_x, text_encoder.PAD_ID)
+  not_padding_with_guardian = tf.pad(not_padding, [[0, 0], [0, 1]])
+  indices = tf.where(tf.logical_not(not_padding_with_guardian))
+  length = tf.segment_min(indices[:, 1], indices[:, 0])
+  return length
   
 
 def gather_2d(params, indices):
@@ -149,4 +172,51 @@ def expand_memory_by_pop_1d(is_pop, memory, offset=1):
   if offset:
     indices = tf.pad(indices, [[offset, 0]])
   return tf.gather(memory, indices)
+
+
+def _get_string_to_id(encoder):
+  """Get a dictionary from string representations to token ID for
+  the encoder. This is a hack and only works for subword and token encoders.
+  """
+  try:
+    return encoder._subtoken_string_to_id
+  except AttributeError:
+    try:
+      return encoder._token_to_id
+    except AttributeError as e:
+      tf.logging.fatal("Could not read encoder vocabulary. Please either "
+                        "use the Subword or Token encoder or specify "
+                        "reserved IDs directly")
+      raise e
+  
+
+def look_up_token_id(encoder, key, token_str, hparams):
+  if not hasattr(hparams, key):
+    try:
+      token_id = _get_string_to_id(encoder)[token_str]
+    except KeyError as e:
+      tf.logging.fatal("%s could not be found in the target vocabulary! "
+                      "Please either add %s to the vocabulary file or "
+                      "specify the ID directly with hparams.%s"
+                      % (token_str, token_str, key))
+      raise e
+    tf.logging.info("Use ID %d for pop signal %s", token_id, token_str)
+    hparams.add_hparam(key, token_id)
+
+
+def extract_max_terminal_id(encoder, hparams):
+  if not hasattr(hparams, 'max_terminal_id'):
+    string_to_id = _get_string_to_id(encoder)
+    max_terminal_id = 0
+    min_nonterminal_id = 1000000
+    for s, i in string_to_id.iteritems():
+      if s[:2] == "##" and s[-2:] == "##":
+        min_nonterminal_id = min(min_nonterminal_id, i)
+      else:
+        max_terminal_id = max(max_terminal_id, i)
+    if min_nonterminal_id != max_terminal_id + 1:
+      tf.logging.warn("Overlapping non-terminal and terminal ID "
+                      "ranges: min nonterminal is %d" % min_nonterminal_id)
+    tf.logging.info("Set maximum terminal ID to %d", max_terminal_id)
+    hparams.add_hparam("max_terminal_id", max_terminal_id)
 
