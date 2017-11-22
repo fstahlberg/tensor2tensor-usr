@@ -118,34 +118,52 @@ def multihead_attention_qkv(query_antecedent,
     key_depth_per_head = total_key_depth // num_heads
     q *= key_depth_per_head**-0.5
 
-    additional_returned_value = None
-    if callable(attention_type):  # Generic way to extend multihead_attention
-      x = attention_type(q, k, v, **kwargs)
-      if isinstance(x, tuple):
-        x, additional_returned_value = x  # Unpack
-    elif attention_type == "dot_product":
-      x = common_attention.dot_product_attention(q, k, v, bias, dropout_rate, image_shapes)
-    elif attention_type == "dot_product_highorder":
-      x = dot_product_highorder_attention(q, k, v, bias, dropout_rate, image_shapes, attention_order=attention_order)
-    elif attention_type == "dot_product_relative":
-      x = common_attention.dot_product_attention_relative(q, k, v, bias, max_relative_position,
-                                         dropout_rate, image_shapes)
-    elif attention_type == "local_mask_right":
-      x = common_attention.masked_local_attention_1d(q, k, v, block_length=block_length)
-    elif attention_type == "local_unmasked":
-      x = common_attention.local_attention_1d(
-          q, k, v, block_length=block_length, filter_width=block_width)
-    elif attention_type == "masked_dilated_1d":
-      x = common_attention.masked_dilated_self_attention_1d(q, k, v, block_length,
-                                           block_width,
-                                           gap_size,
-                                           num_memory_blocks)
+    if "," in attention_type:
+      num_types = attention_type.count(",") + 1
+      qs = tf.split(q, num_types, axis=1)
+      ks = tf.split(k, num_types, axis=1)
+      vs = tf.split(v, num_types, axis=1)
+      key_depth_per_head = total_key_depth // num_heads // num_types
     else:
-      assert attention_type == "unmasked_dilated_1d"
-      x = common_attention.dilated_self_attention_1d(q, k, v, block_length,
-                                    block_width,
-                                    gap_size,
-                                    num_memory_blocks)
+      qs = [q]
+      ks = [k]
+      vs = [v]
+      key_depth_per_head = total_key_depth // num_heads
+    additional_returned_value = None
+    xs = []
+    for q, k, v, att_type in zip(qs, ks, vs, attention_type.split(",")):
+      q *= key_depth_per_head**-0.5
+      if callable(att_type):  # Generic way to extend multihead_attention
+        x = att_type(q, k, v, **kwargs)
+        if isinstance(x, tuple):
+          x, additional_returned_value = x  # Unpack
+      elif att_type == "dot_product":
+        x = common_attention.dot_product_attention(q, k, v, bias, dropout_rate, image_shapes)
+      elif att_type == "dot_product_highorder":
+        x = dot_product_highorder_attention(q, k, v, bias, dropout_rate, image_shapes, attention_order=attention_order)
+      elif att_type == "dot_product_highorder_shared":
+        x = dot_product_highorder_shared_attention(q, k, v, bias, dropout_rate, image_shapes, attention_order=attention_order)
+      elif att_type == "dot_product_relative":
+        x = common_attention.dot_product_attention_relative(q, k, v, bias, max_relative_position,
+                                           dropout_rate, image_shapes)
+      elif att_type == "local_mask_right":
+        x = common_attention.masked_local_attention_1d(q, k, v, block_length=block_length)
+      elif att_type == "local_unmasked":
+        x = common_attention.local_attention_1d(
+            q, k, v, block_length=block_length, filter_width=block_width)
+      elif att_type == "masked_dilated_1d":
+        x = common_attention.masked_dilated_self_attention_1d(q, k, v, block_length,
+                                             block_width,
+                                             gap_size,
+                                             num_memory_blocks)
+      else:
+        assert att_type == "unmasked_dilated_1d"
+        x = common_attention.dilated_self_attention_1d(q, k, v, block_length,
+                                      block_width,
+                                      gap_size,
+                                      num_memory_blocks)
+      xs.append(x)
+    x = xs[0] if len(xs) == 1 else tf.concat(xs, axis=1)
     x = common_attention.combine_heads(x)
     x = common_layers.conv1d(x, output_depth, 1, name="output_transform")
     if additional_returned_value is not None:
@@ -185,8 +203,62 @@ def dot_product_highorder_attention(q,
   if attention_order == 1:
     return common_attention.dot_product_attention(q, k, v, bias, dropout_rate, image_shapes,
         name=name, make_image_summary=make_image_summary)
+  # Split q, k in attention_order pieces
+  qs = tf.split(q, attention_order, axis=3)
+  ks = tf.split(k, attention_order, axis=3)
   with tf.variable_scope(
-      name, default_name="dot_product_attention", values=[q, k, v]):
+      name, default_name="dot_product_highorder_attention", values=[q, k, v]):
+    for idx in xrange(attention_order):
+      # [batch, num_heads, query_length, memory_length]
+      q = tf.matmul(weights, qs[idx]) if idx != 0 else qs[0]
+      logits = tf.matmul(q, ks[idx], transpose_b=True)
+      if bias is not None:
+        logits += bias
+      weights = tf.nn.softmax(logits, name="attention_weights")
+    # dropping out the attention links for each of the heads
+    weights = tf.nn.dropout(weights, 1.0 - dropout_rate)
+    if (not tf.get_variable_scope().reuse and
+        # Summaries don't work well within tf.while_loop()
+        "/while/" not in tf.contrib.framework.get_name_scope() and
+        make_image_summary):
+      common_attention.attention_image_summary(weights, image_shapes)
+    return tf.matmul(weights, v)
+
+
+def dot_product_highorder_shared_attention(q,
+                          k,
+                          v,
+                          bias,
+                          dropout_rate=0.0,
+                          image_shapes=None,
+                          attention_order=2,
+                          name=None,
+                          make_image_summary=True):
+  """High order dot-product attention. Attention is applied repeatedly
+  to generate query vectors. For example, 2-order attention uses q,k,v
+  to generate a new query vector q'. The final attention result is
+  computed with q',k,v.
+
+  Args:
+    q: a Tensor with shape [batch, heads, length_q, depth_k]
+    k: a Tensor with shape [batch, heads, length_kv, depth_k]
+    v: a Tensor with shape [batch, heads, length_kv, depth_v]
+    bias: bias Tensor (see attention_bias())
+    dropout_rate: a floating point number
+    image_shapes: optional tuple of integer scalars.
+      see comments for attention_image_summary()
+    attention_order (int): Attention order (number of steps)
+    name: an optional string
+    make_image_summary: True if you want an image summary.
+
+  Returns:
+    A Tensor.
+  """
+  if attention_order == 1:
+    return common_attention.dot_product_attention(q, k, v, bias, dropout_rate, image_shapes,
+        name=name, make_image_summary=make_image_summary)
+  with tf.variable_scope(
+      name, default_name="dot_product_highorder_shared_attention", values=[q, k, v]):
     for _ in xrange(attention_order):
       # [batch, num_heads, query_length, memory_length]
       logits = tf.matmul(q, k, transpose_b=True)
@@ -200,5 +272,5 @@ def dot_product_highorder_attention(q,
         # Summaries don't work well within tf.while_loop()
         "/while/" not in tf.contrib.framework.get_name_scope() and
         make_image_summary):
-      attention_image_summary(weights, image_shapes)
+      common_attention.attention_image_summary(weights, image_shapes)
     return tf.matmul(weights, v)

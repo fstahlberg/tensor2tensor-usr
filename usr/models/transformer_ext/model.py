@@ -207,7 +207,7 @@ def transformer_prepare_decoder(targets, hparams):
   return (decoder_input, decoder_self_attention_bias)
 
 
-def embed_position_signal(
+def embed_position_signal_sine(
     base_signal, channels, min_timescale=1.0, max_timescale=1.0e4):
   """Gets a bunch of sinusoids of different frequencies.
 
@@ -238,6 +238,22 @@ def embed_position_signal(
   signal = tf.concat([tf.sin(scaled_time), tf.cos(scaled_time)], axis=2)
   signal = tf.pad(signal, [[0, 0], [0, 0], [0, tf.mod(channels, 2)]])
   return signal
+
+def embed_position_signal_rnn(base_signal, channels, scope_name):
+  with tf.variable_scope("pos_rnn_%s" % scope_name):
+    cell = tf.contrib.rnn.BasicRNNCell(channels, activation=tf.tanh)
+    max_length = tf.cast(tf.reduce_max(base_signal) + 1, tf.int32)
+    inputs = tf.ones([1, max_length, 1])
+    pos_embeds, _ = tf.nn.dynamic_rnn(
+      cell,
+      inputs,
+      dtype=tf.float32,
+      time_major=False)
+    pos_embeds = tf.squeeze(pos_embeds, 0)
+    # pos embeds has shape [max_pos, channels]
+    embedded_signal = tf.gather(pos_embeds, tf.cast(base_signal, tf.int32))
+    return embedded_signal    
+
 
 BFS_SIGNAL_BFS = 0
 BFS_SIGNAL_LOGBFS = 1
@@ -372,8 +388,15 @@ def generate_positional_embeddings(pos_signals, pos_strategies, hparams):
           tf.logging.error("Number of channels for %s is critically low (%d)"
                            % (strat, channels))
       channels_sum += channels
-    embeddings.append(embed_position_signal(
-       pos_signals[strat], channels, max_timescale=max_timescale))
+    if hparams.pos_embed == "sine":
+      embeddings.append(embed_position_signal_sine(
+         pos_signals[strat], channels, max_timescale=max_timescale))
+    elif hparams.pos_embed == "rnn":
+      embeddings.append(embed_position_signal_rnn(
+         pos_signals[strat], channels, strat))
+    else:
+      tf.logging.error("Unknown position embedding strategy '%s'" 
+                       % hparams.pos_embed)
   if hparams.multi_pos_policy == "sequential":
     combined_embeddings = sum(embeddings)
   else: # parallel: concatenate embeddings, pad if necessary
@@ -436,19 +459,18 @@ def transformer_encoder(encoder_input,
     y: a Tensors
   """
   x = encoder_input
-
-  raw_encoder_input = tf.squeeze(raw_inputs, axis=[-2, -1])
-  sequence_length = usr_utils.get_length_from_raw(raw_encoder_input)  # Used for RNNs
-  pos_signals = generate_positional_signals(raw_encoder_input, hparams)
-  pos_embeddings = generate_positional_embeddings(pos_signals, hparams.encoder_pos, hparams)
-  attention_pos_embeddings = generate_positional_embeddings(pos_signals, hparams.encoder_attention_pos, hparams)
-  if "sum" in hparams.pos_integration:
-    x = x + pos_embeddings
-  elif "ffn" in hparams.pos_integration:
-    with tf.variable_scope("pos_ffn"):
-      x = tf.concat([x, pos_embeddings], axis=2)
-      x = transformer_ffn_layer(x, hparams)
   with tf.variable_scope(name):
+    raw_encoder_input = tf.squeeze(raw_inputs, axis=[-2, -1])
+    sequence_length = usr_utils.get_length_from_raw(raw_encoder_input)  # Used for RNNs
+    pos_signals = generate_positional_signals(raw_encoder_input, hparams)
+    pos_embeddings = generate_positional_embeddings(pos_signals, hparams.encoder_pos, hparams)
+    attention_pos_embeddings = generate_positional_embeddings(pos_signals, hparams.encoder_attention_pos, hparams)
+    if "sum" in hparams.pos_integration:
+      x = x + pos_embeddings
+    elif "ffn" in hparams.pos_integration:
+      with tf.variable_scope("pos_ffn"):
+        x = tf.concat([x, pos_embeddings], axis=2)
+        x = transformer_ffn_layer(x, hparams)
     pad_remover = None
     if hparams.use_pad_remover:
       pad_remover = expert_utils.PadRemover(
@@ -470,12 +492,12 @@ def transformer_encoder(encoder_input,
                   hparams.hidden_size,
                   hparams.num_heads,
                   hparams.attention_dropout,
-                  attention_type=hparams.self_attention_type,
+                  attention_type=hparams.encoder_self_attention_type,
+                  attention_order=hparams.attention_order,
                   max_relative_position=hparams.max_relative_position)
               x = common_layers.layer_postprocess(x, y, hparams)
           elif layer_type == "rnn":
             with tf.variable_scope("recurrent"):
-            #with tf.variable_scope("pos_self_attention"):
               y = transformer_rnn_layer(
                   common_layers.layer_preprocess(x, hparams), 
                   sequence_length, 
@@ -502,6 +524,7 @@ def transformer_encoder(encoder_input,
                     hparams.num_heads,
                     hparams.attention_dropout,
                     attention_type=hparams.pos_self_attention_type,
+                    attention_order=hparams.attention_order,
                     max_relative_position=hparams.max_relative_position)
               x = common_layers.layer_postprocess(x, y, hparams)
           else:
@@ -542,23 +565,21 @@ def transformer_decoder(decoder_input,
     y: a Tensors
   """
   x = decoder_input
-
-  sequence_length = usr_utils.get_length_from_raw(
-      tf.squeeze(raw_targets, axis=[-2, -1]))  # Used for RNNs
-  sequence_length = sequence_length + 1  # Because of shifting 
-
-  raw_decoder_input = common_layers.shift_right(raw_targets)
-  raw_decoder_input = tf.squeeze(raw_decoder_input, axis=[-2, -1])
-  pos_signals = generate_positional_signals(raw_decoder_input, hparams)
-  pos_embeddings = generate_positional_embeddings(pos_signals, hparams.decoder_pos, hparams)
-  attention_pos_embeddings = generate_positional_embeddings(pos_signals, hparams.decoder_attention_pos, hparams)
-  if "sum" in hparams.pos_integration:
-    x = x + pos_embeddings
-  elif "ffn" in hparams.pos_integration:
-    with tf.variable_scope("pos_ffn"):
-      x = tf.concat([x, pos_embeddings], axis=2)
-      x = transformer_ffn_layer(x, hparams)
   with tf.variable_scope(name):
+    sequence_length = usr_utils.get_length_from_raw(
+        tf.squeeze(raw_targets, axis=[-2, -1]))  # Used for RNNs
+    sequence_length = sequence_length + 1  # Because of shifting 
+    raw_decoder_input = common_layers.shift_right(raw_targets)
+    raw_decoder_input = tf.squeeze(raw_decoder_input, axis=[-2, -1])
+    pos_signals = generate_positional_signals(raw_decoder_input, hparams)
+    pos_embeddings = generate_positional_embeddings(pos_signals, hparams.decoder_pos, hparams)
+    attention_pos_embeddings = generate_positional_embeddings(pos_signals, hparams.decoder_attention_pos, hparams)
+    if "sum" in hparams.pos_integration:
+      x = x + pos_embeddings
+    elif "ffn" in hparams.pos_integration:
+      with tf.variable_scope("pos_ffn"):
+        x = tf.concat([x, pos_embeddings], axis=2)
+        x = transformer_ffn_layer(x, hparams)
     for layer in xrange(hparams.num_decoder_layers or
                         hparams.num_hidden_layers):
       layer_name = "layer_%d" % layer
@@ -577,7 +598,8 @@ def transformer_decoder(decoder_input,
                   hparams.hidden_size,
                   hparams.num_heads,
                   hparams.attention_dropout,
-                  attention_type=hparams.self_attention_type,
+                  attention_type=hparams.decoder_self_attention_type,
+                  attention_order=hparams.attention_order,
                   max_relative_position=hparams.max_relative_position,
                   cache=layer_cache)
               x = common_layers.layer_postprocess(x, y, hparams)
@@ -601,6 +623,7 @@ def transformer_decoder(decoder_input,
                   hparams.num_heads,
                   hparams.attention_dropout,
                   attention_type=hparams.pos_self_attention_type,
+                  attention_order=hparams.attention_order,
                   max_relative_position=hparams.max_relative_position)
             x = common_layers.layer_postprocess(x, y, hparams)
           elif layer_type == "enc_att" and encoder_output is not None:

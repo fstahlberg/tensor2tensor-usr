@@ -61,12 +61,14 @@ def transformer_ext_v1():
   hparams.add_hparam("nbr_decoder_problems", 1)
   hparams.add_hparam("proximity_bias", int(False))
   hparams.add_hparam("use_pad_remover", int(True))
-  hparams.add_hparam("self_attention_type", "dot_product")
+  hparams.add_hparam("encoder_self_attention_type", "dot_product")
+  hparams.add_hparam("decoder_self_attention_type", "dot_product")
   hparams.add_hparam("max_relative_position", 0)
 
   # Advanced positional embeddings
   # Comma separated: timing, dfs, bfs, logbfs, depth, num_left_local, num_left_global
   # Use eg "timing:1000" to specify max_timescale explicitly
+  hparams.add_hparam("pos_embed", "sine") # sine, rnn
   hparams.add_hparam("multi_pos_policy", "parallel") # parallel, sequential
   hparams.add_hparam("max_children", 5) # for logbfs
   hparams.add_hparam("pos_integration", "sum") # sum, ffn
@@ -79,6 +81,8 @@ def transformer_ext_v1():
   # eg. rnn:2 inserts a RNN layer in the two top layers
   hparams.add_hparam("encoder_layer_types", "self_att")
   hparams.add_hparam("decoder_layer_types", "self_att,enc_att")
+  # Used for higher order attention types
+  hparams.add_hparam("attention_order", 2)
   return hparams
 
 
@@ -141,6 +145,16 @@ def transformer_ext_parsing_ffn():
 
 
 @registry.register_hparams
+def transformer_ext_parsing_ffn_rpos():
+  """Hparams for parsing on wsj only."""
+  hparams = transformer_ext_parsing_base()
+  hparams.decoder_pos = "timing,depth,num_left_global" 
+  hparams.pos_integration = "ffn"
+  hparams.pos_embed = "rnn"
+  return hparams
+
+
+@registry.register_hparams
 def transformer_ext_parsing_ffn_v2():
   """Hparams for parsing on wsj only."""
   hparams = transformer_ext_parsing_base()
@@ -150,14 +164,43 @@ def transformer_ext_parsing_ffn_v2():
 
 
 @registry.register_hparams
+def transformer_ext_parsing_ffn_v3():
+  """Hparams for parsing on wsj only."""
+  hparams = transformer_ext_parsing_base()
+  hparams.decoder_pos = "timing:2000,depth:1000,num_left_global:1000,parent_timing:2000,parent_num_left_global:1000"
+  hparams.pos_integration = "ffn"
+  hparams.decoder_layer_types = "self_att,enc_att,pos_self_att:1"
+  return hparams
+
+@registry.register_hparams
 def transformer_ext_parsing_highorder():
   """Hparams for parsing on wsj only."""
   hparams = transformer_ext_parsing_base()
-  hparams.add_hparam("attention_order", 2)
-  hparams.self_attention_type = "dot_product_highorder"
+  hparams.decoder_self_attention_type = "dot_product_highorder_shared"
   hparams.decoder_pos = "timing:2000,logbfs:1000,num_left_global:1000,parent_timing:2000,parent_num_left_global:1000"
   hparams.pos_integration = "ffn"
   return hparams
+
+
+@registry.register_hparams
+def transformer_ext_parsing_highorder_notshared():
+  """Hparams for parsing on wsj only."""
+  hparams = transformer_ext_parsing_base()
+  hparams.decoder_self_attention_type = "dot_product_highorder"
+  hparams.decoder_pos = "timing:2000,logbfs:1000,num_left_global:1000,parent_timing:2000,parent_num_left_global:1000"
+  hparams.pos_integration = "ffn"
+  return hparams
+
+
+@registry.register_hparams
+def transformer_ext_parsing_highorder_v2():
+  """Hparams for parsing on wsj only."""
+  hparams = transformer_ext_parsing_base()
+  hparams.decoder_self_attention_type = "dot_product,dot_product_highorder"
+  hparams.decoder_pos = "timing:2000,depth:1000,num_left_global:1000,parent_timing:2000,parent_num_left_global:1000"
+  hparams.pos_integration = "ffn"
+  return hparams
+
 
 @registry.register_hparams
 def transformer_ext_parsing_debug():
