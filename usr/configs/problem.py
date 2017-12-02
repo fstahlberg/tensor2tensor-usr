@@ -23,6 +23,11 @@ class TranslateFlatStarttaggedEndeWmt32k(TranslateEndeWmt32k):
   def vocab_file(self):
     return "vocab.%s" % self.name
 
+  def hparams(self, defaults, model_hparams):
+    super(TranslateFlatStarttaggedEndeWmt32k, self).hparams(defaults, model_hparams)
+    usr_utils.look_up_token_id(self._encoders["targets"], "closing_bracket_id", "##)##", model_hparams)
+    usr_utils.extract_max_terminal_id(self._encoders["targets"], model_hparams)
+
 
 @registry.register_problem
 class TranslateFlatStarttaggedPtb16k(TranslateEndeWmt32k):

@@ -20,6 +20,7 @@ def tfnmt_base():
   """
   hparams = common_hparams.basic_params1()
   hparams.batch_size = 4096  # Roughly equivalent to TF-NMT's batch_size=128
+  hparams.shared_embedding_and_softmax_weights = False
   hparams.dropout = 0.2
   hparams.learning_rate = 1.0
   hparams.clip_grad_norm = 5.0  # Called max_gradient_norm in TF-NMT
