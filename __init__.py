@@ -11,8 +11,8 @@ try:
   # Extensions to the transformer model
   # - Advanced positional encodings
   # - Recurrent layers
-  import usr.models.transformer_ext.model
-  import usr.models.transformer_ext.hparams
+  #import usr.models.transformer_ext.model
+  #import usr.models.transformer_ext.hparams
   
   # Layer-by-layer models
   import usr.models.layerbylayer.tfnmt_model

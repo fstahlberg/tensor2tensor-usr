@@ -41,7 +41,7 @@ def get_feature_with_length(features, name):
   Args:
     features (dict): Dictionary with features.
     name (string): Feature to extract (will read features[name] and maybe
-                    features[raw_name]
+                    features[name_raw]
 
   Returns:
     Pair of (embed, length) tensors, where `embed` is a (batch_size,
@@ -51,8 +51,8 @@ def get_feature_with_length(features, name):
   # features[name] shape: (batch_size, max_len, 1, embed_size)
   embed = common_layers.flatten4d3d(features[name])
   # embed shape: (batch_size, max_len, embed_size)
-  if "raw_%s" % name in features:
-    raw = tf.squeeze(features["raw_%s" % name], axis=[2, 3])
+  if "%s_raw" % name in features:
+    raw = tf.squeeze(features["%s_raw" % name], axis=[2, 3])
     not_padding = tf.not_equal(raw, text_encoder.PAD_ID)
   else:
     tf.logging.warn(
@@ -89,6 +89,10 @@ def get_length_from_raw(raw_x):
   indices = tf.where(tf.logical_not(not_padding_with_guardian))
   length = tf.segment_min(indices[:, 1], indices[:, 0])
   return length
+
+
+def get_length_from_nonpadding(nonpadding):
+  return tf.reduce_sum(nonpadding, axis=1)
   
 
 def gather_2d(params, indices):
