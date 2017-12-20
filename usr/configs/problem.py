@@ -17,6 +17,10 @@ class TranslateFlatBothtaggedEndeWmt32k(TranslateEndeWmt32k):
   def vocab_file(self):
     return "vocab.%s" % self.name
 
+  def hparams(self, defaults, model_hparams):
+    super(TranslateFlatBothtaggedEndeWmt32k, self).hparams(defaults, model_hparams)
+    usr_utils.extract_max_terminal_id(self._encoders["targets"], model_hparams)
+
 @registry.register_problem
 class TranslateFlatStarttaggedEndeWmt32k(TranslateEndeWmt32k):
   @property
@@ -85,3 +89,39 @@ class TranslateJaenKyoto32k(TranslateEndeWmt32k):
     return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
             "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
 
+
+@registry.register_problem
+class TranslateJaenWat32k(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja.%s" % self.name
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+
+@registry.register_problem
+class TranslateFlatStarttaggedJaenWat32k(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja.%s" % self.name
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+  def hparams(self, defaults, model_hparams):
+    super(TranslateFlatStarttaggedJaenWat32k, self).hparams(defaults, model_hparams)
+    usr_utils.look_up_token_id(self._encoders["targets"], "closing_bracket_id", "##)##", model_hparams)
+    usr_utils.extract_max_terminal_id(self._encoders["targets"], model_hparams)

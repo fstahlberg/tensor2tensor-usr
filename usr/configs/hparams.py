@@ -21,14 +21,16 @@ def transformer_base_v2_fake_replicas():
 
 
 @registry.register_hparams
-def transformer_base_12gb_gpu_large_batch():
+def transformer_base_v2_large_batch():
   """Replication of Vaswani et al., 2017 on a single 12GB gpu.
   
   Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
   """
-  hparams = transformer_base()
-  hparams.batch_size = 8192
-  hparams.fake_gpu_multiplier = 4
+  hparams = transformer_base_v2()
+  #hparams.batch_size = 8192
+  hparams.batch_size = 4096
+  hparams.fake_gpu_multiplier = 8
+  hparams.max_length = 150
   hparams.optimizer = "LargebatchAdam"
   return hparams
 
