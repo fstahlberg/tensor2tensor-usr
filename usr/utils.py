@@ -92,7 +92,7 @@ def get_length_from_raw(raw_x):
 
 
 def get_length_from_nonpadding(nonpadding):
-  return tf.reduce_sum(nonpadding, axis=1)
+  return tf.cast(tf.reduce_sum(nonpadding, axis=1), tf.int32)
   
 
 def gather_2d(params, indices):
@@ -197,7 +197,11 @@ def _get_string_to_id(encoder):
 def look_up_token_id(encoder, key, token_str, hparams):
   if not hasattr(hparams, key):
     try:
-      token_id = _get_string_to_id(encoder)[token_str]
+      s2i = _get_string_to_id(encoder)
+      if token_str in s2i:
+        token_id = s2i[token_str]
+      else:
+        token_id = s2i["'%s'" % token_str]
     except KeyError as e:
       tf.logging.fatal("%s could not be found in the target vocabulary! "
                       "Please either add %s to the vocabulary file or "
@@ -214,7 +218,8 @@ def extract_max_terminal_id(encoder, hparams):
     max_terminal_id = 0
     min_nonterminal_id = 1000000
     for s, i in string_to_id.iteritems():
-      if s[:2] == "##" and s[-2:] == "##":
+      if ((s[:2] == "##" and s[-2:] == "##") or
+            (s[:3] == "'##" and s[-3:] == "##'")):
         min_nonterminal_id = min(min_nonterminal_id, i)
       else:
         max_terminal_id = max(max_terminal_id, i)

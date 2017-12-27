@@ -45,3 +45,27 @@ def transformer_base_v2_large_batch2():
   hparams.fake_gpu_multiplier = 2
   hparams.optimizer = "LargebatchAdam"
   return hparams
+
+
+@registry.register_hparams
+def transformer_base_v2_large_batch4():
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
+  
+  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
+  """
+  hparams = transformer_base_v2()
+  hparams.fake_gpu_multiplier = 4
+  hparams.optimizer = "LargebatchAdam"
+  return hparams
+
+@registry.register_hparams
+def transformer_base_v2_large_batch32():
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
+  
+  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
+  """
+  hparams = transformer_base_v2()
+  hparams.fake_gpu_multiplier = 32
+  hparams.optimizer = "LargebatchAdam"
+  return hparams
+
