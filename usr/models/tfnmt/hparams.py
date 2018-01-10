@@ -150,3 +150,21 @@ def tfnmt_12gb_gpu_alternating():
   hparams.encoder_type = "alternating"
   hparams.batch_size = 4096
   return hparams
+
+@registry.register_hparams
+def tfnmt_t2t():
+  """tfnmt_12gb_gpu with alternating encoder."""
+  hparams = tfnmt_12gb_gpu()
+  hparams.residual = True
+  #hparams.encoder_type = "alternating"
+  hparams.batch_size = 4096
+  hparams.optimizer_adam_beta1 = 0.9
+  hparams.optimizer_adam_beta2 = 0.98
+  hparams.num_sampled_classes = 0
+  hparams.label_smoothing = 0.1
+  hparams.shared_embedding_and_softmax_weights = True
+  hparams.learning_rate_warmup_steps = 8000
+  hparams.learning_rate = 0.2
+  hparams.fake_gpu_multiplier = 8
+  hparams.optimizer = "LargebatchAdam"
+  return hparams

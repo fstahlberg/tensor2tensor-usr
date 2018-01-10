@@ -16,6 +16,10 @@ class TranslateDeenWmt32k(TranslateEndeWmt32k):
   pass
 
 @registry.register_problem
+class TranslateEnderWmt32k(TranslateEndeWmt32k):
+  pass
+
+@registry.register_problem
 class TranslateFlatBothtaggedEndeWmt32k(TranslateEndeWmt32k):
   @property
   def vocab_file(self):
