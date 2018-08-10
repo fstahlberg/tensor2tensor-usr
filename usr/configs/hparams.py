@@ -7,7 +7,7 @@ from __future__ import print_function
 
 import math
 from tensor2tensor.utils import registry
-from tensor2tensor.models.transformer import transformer_base_v2, transformer_big
+from tensor2tensor.models.transformer import transformer_base_v2, transformer_big, transformer_relative_big
 from tensor2tensor.models.slicenet import slicenet_params1_noam
 
 
@@ -30,9 +30,9 @@ def transformer_base_v2_large_batch():
   hparams = transformer_base_v2()
   #hparams.batch_size = 8192
   hparams.batch_size = 4096
-  hparams.fake_gpu_multiplier = 8
+  hparams.optimizer_multistep_accumulate_steps = 8
   hparams.max_length = 150
-  hparams.optimizer = "LargebatchAdam"
+  hparams.optimizer = "MultistepAdam"
   return hparams
 
 
@@ -43,8 +43,8 @@ def transformer_base_v2_large_batch2():
   Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
   """
   hparams = transformer_base_v2()
-  hparams.fake_gpu_multiplier = 2
-  hparams.optimizer = "LargebatchAdam"
+  hparams.optimizer_multistep_accumulate_steps = 2
+  hparams.optimizer = "MultistepAdam"
   return hparams
 
 
@@ -55,8 +55,19 @@ def transformer_base_v2_large_batch4():
   Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
   """
   hparams = transformer_base_v2()
-  hparams.fake_gpu_multiplier = 4
-  hparams.optimizer = "LargebatchAdam"
+  hparams.optimizer_multistep_accumulate_steps = 4
+  hparams.optimizer = "MultistepAdam"
+  return hparams
+
+@registry.register_hparams
+def transformer_base_v2_large_batch8():
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
+  
+  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
+  """
+  hparams = transformer_base_v2()
+  hparams.optimizer_multistep_accumulate_steps = 8
+  hparams.optimizer = "MultistepAdam"
   return hparams
 
 @registry.register_hparams
@@ -67,9 +78,47 @@ def transformer_big_large_batch4():
   """
   hparams = transformer_big()
   hparams.batch_size = 2048
-  hparams.fake_gpu_multiplier = 4
-  hparams.optimizer = "LargebatchAdam"
+  hparams.optimizer_multistep_accumulate_steps = 4
+  hparams.optimizer = "MultistepAdam"
   return hparams
+
+@registry.register_hparams
+def transformer_big_large_batch128():
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
+  
+  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
+  """
+  hparams = transformer_big()
+  hparams.batch_size = 1024
+  hparams.optimizer_multistep_accumulate_steps = 128
+  hparams.optimizer = "MultistepAdam"
+  return hparams
+
+@registry.register_hparams
+def transformer_relative_big_large_batch4():
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
+  
+  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
+  """
+  hparams = transformer_relative_big()
+  hparams.batch_size = 2048
+  hparams.optimizer_multistep_accumulate_steps = 4
+  hparams.optimizer = "MultistepAdam"
+  return hparams
+
+
+@registry.register_hparams
+def transformer_relative_big_large_batch128():
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
+  
+  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
+  """
+  hparams = transformer_relative_big()
+  hparams.batch_size = 1024
+  hparams.optimizer_multistep_accumulate_steps = 128
+  hparams.optimizer = "MultistepAdam"
+  return hparams
+
 
 @registry.register_hparams
 def transformer_base_v2_large_batch32():
@@ -78,8 +127,8 @@ def transformer_base_v2_large_batch32():
   Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
   """
   hparams = transformer_base_v2()
-  hparams.fake_gpu_multiplier = 32
-  hparams.optimizer = "LargebatchAdam"
+  hparams.optimizer_multistep_accumulate_steps = 32
+  hparams.optimizer = "MultistepAdam"
   return hparams
 
 @registry.register_hparams
@@ -97,8 +146,8 @@ def slicenet_large_batch2():
   Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
   """
   hparams = slicenet_params1_noam()
-  hparams.fake_gpu_multiplier = 2
-  hparams.optimizer = "LargebatchAdam"
+  hparams.optimizer_multistep_accumulate_steps = 2
+  hparams.optimizer = "MultistepAdam"
   #hparams.batch_size = 2048
   hparams.batch_size = 4096
   hparams.max_length = 150

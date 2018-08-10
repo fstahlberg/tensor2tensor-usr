@@ -25,7 +25,7 @@ import tensorflow as tf
 class TFNmt(t2t_model.T2TModel):
   """Adaptor class for TF-NMT models."""
 
-  def model_fn_body(self, features):
+  def body(self, features):
     hparams = self._hparams
     inputs, inputs_length = usr_utils.get_feature_with_length(features, 
                                                               "inputs")

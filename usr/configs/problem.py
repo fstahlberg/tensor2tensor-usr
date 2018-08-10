@@ -11,6 +11,41 @@ from tensor2tensor.data_generators import text_encoder
 from usr import utils as usr_utils
 import os
 
+# Start CF project
+@registry.register_problem
+class TranslateEsenScieloHealth(TranslateEndeWmt32k):
+  @property
+  def vocab_file(self):
+    return "vocab.esen"
+
+  def feature_encoders(self, data_dir):
+    vocab_filename = os.path.join(data_dir, self.vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(vocab_filename)}
+
+@registry.register_problem
+class TranslateEsenScieloBio(TranslateEndeWmt32k):
+  @property
+  def vocab_file(self):
+    return "vocab.esen"
+
+  def feature_encoders(self, data_dir):
+    vocab_filename = os.path.join(data_dir, self.vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(vocab_filename)}
+
+@registry.register_problem
+class TranslateEsenScieloHealthBio(TranslateEndeWmt32k):
+  @property
+  def vocab_file(self):
+    return "vocab.esen"
+
+  def feature_encoders(self, data_dir):
+    vocab_filename = os.path.join(data_dir, self.vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(vocab_filename)}
+# End CF project
+
 @registry.register_problem
 class TranslateDeenWmt32k(TranslateEndeWmt32k):
   pass
@@ -83,6 +118,126 @@ class TranslateFlatNtStarttaggedPtb16k(TranslateFlatStarttaggedPtb16k):
 
 
 @registry.register_problem
+class TranslatePtenScieloh(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def trg_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def vocab_file(self):
+    return "vocab.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TranslatePtenScielohOsm(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def trg_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def vocab_file(self):
+    return "vocab.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TranslatePtenScielohOsm2(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def trg_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def vocab_file(self):
+    return "vocab.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TranslateEsenScieloh(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def trg_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def vocab_file(self):
+    return "vocab.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TranslateEsenScielohOsm(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def trg_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def vocab_file(self):
+    return "vocab.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TranslateEsenScielohOsm2(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def trg_vocab_file(self):
+    return "vocab.%s" % self.name
+
+  @property
+  def vocab_file(self):
+    return "vocab.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
 class TranslateJaenKyoto32k(TranslateEndeWmt32k):
   @property
   def src_vocab_file(self):
@@ -128,6 +283,102 @@ class TranslateJaenWatOsm32k(TranslateEndeWmt32k):
     trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
     return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
             "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+  def hparams(self, defaults, model_hparams):
+    super(TranslateJaenWatOsm32k, self).hparams(defaults, model_hparams)
+    usr_utils.look_up_token_id(self._encoders["targets"], "pop_id", "<EOP>", model_hparams)
+
+@registry.register_problem
+class TranslateJaenWatOsmbpe32k(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja.%s" % self.name
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+  def hparams(self, defaults, model_hparams):
+    super(TranslateJaenWatOsmbpe32k, self).hparams(defaults, model_hparams)
+    usr_utils.look_up_token_id(self._encoders["targets"], "pop_id", "<EOP>", model_hparams)
+
+@registry.register_problem
+class TranslateJaenWatNileOsmbpe32k(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja.%s" % self.name
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+  def hparams(self, defaults, model_hparams):
+    super(TranslateJaenWatNileOsmbpe32k, self).hparams(defaults, model_hparams)
+    usr_utils.look_up_token_id(self._encoders["targets"], "pop_id", "<EOP>", model_hparams)
+
+@registry.register_problem
+class TranslateJaenWatOsmfert32k(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja.%s" % self.name
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.fert.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TranslateJaenKyotoOsm32k(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja.%s" % self.name
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+  def hparams(self, defaults, model_hparams):
+    super(TranslateJaenKyotoOsm32k, self).hparams(defaults, model_hparams)
+    usr_utils.look_up_token_id(self._encoders["targets"], "pop_id", "<EOP>", model_hparams)
+
+@registry.register_problem
+class TranslateJaenKyotoOsmbpe32k(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja.%s" % self.name
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+  def hparams(self, defaults, model_hparams):
+    super(TranslateJaenKyotoOsmbpe32k, self).hparams(defaults, model_hparams)
+    usr_utils.look_up_token_id(self._encoders["targets"], "pop_id", "<EOP>", model_hparams)
+
 
 @registry.register_problem
 class TranslateFlatStarttaggedJaenWat32k(TranslateEndeWmt32k):
@@ -206,6 +457,142 @@ class TranslateZhenTcbpeWmt32k(TranslateEndeWmt32k):
   @property
   def trg_vocab_file(self):
     return "vocab.en.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+# WMT18
+@registry.register_problem
+class TranslateEndeWmt18(TranslateEndeWmt32k):
+
+  @property
+  def src_vocab_file(self):
+    return "vocab.ende.wmt18"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.ende.wmt18"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+
+@registry.register_problem
+class TranslateDeenWmt18(TranslateEndeWmt32k):
+
+  @property
+  def src_vocab_file(self):
+    return "vocab.ende.wmt18"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.ende.wmt18"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+
+@registry.register_problem
+class TranslateEnzhWmt18(TranslateEndeWmt32k):
+
+  @property
+  def src_vocab_file(self):
+    return "vocab.en.wmt18"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.zh.wmt18"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+
+@registry.register_problem
+class TranslateZhenWmt18(TranslateEndeWmt32k):
+
+  @property
+  def src_vocab_file(self):
+    return "vocab.zh.wmt18"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.wmt18"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+
+@registry.register_problem
+class TranslateEnderWmt18(TranslateEndeWmt32k):
+
+  @property
+  def src_vocab_file(self):
+    return "vocab.ende.wmt18"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.ende.wmt18"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+
+@registry.register_problem
+class TranslateDeenrWmt18(TranslateEndeWmt32k):
+
+  @property
+  def src_vocab_file(self):
+    return "vocab.ende.wmt18"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.ende.wmt18"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+
+@registry.register_problem
+class TranslateEnzhrWmt18(TranslateEndeWmt32k):
+
+  @property
+  def src_vocab_file(self):
+    return "vocab.en.wmt18"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.zh.wmt18"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+
+@registry.register_problem
+class TranslateZhenrWmt18(TranslateEndeWmt32k):
+
+  @property
+  def src_vocab_file(self):
+    return "vocab.zh.wmt18"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.wmt18"
 
   def feature_encoders(self, data_dir):
     src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)

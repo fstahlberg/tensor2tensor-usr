@@ -165,6 +165,6 @@ def tfnmt_t2t():
   hparams.shared_embedding_and_softmax_weights = True
   hparams.learning_rate_warmup_steps = 8000
   hparams.learning_rate = 0.2
-  hparams.fake_gpu_multiplier = 8
-  hparams.optimizer = "LargebatchAdam"
+  hparams.optimizer = "MultistepAdam"
+  hparams.optimizer_multistep_accumulate_steps = 8
   return hparams
