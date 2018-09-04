@@ -28,10 +28,8 @@ def transformer_base_v2_large_batch():
   Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
   """
   hparams = transformer_base_v2()
-  #hparams.batch_size = 8192
-  hparams.batch_size = 4096
   hparams.optimizer_multistep_accumulate_steps = 8
-  hparams.max_length = 150
+  #hparams.max_length = 150
   hparams.optimizer = "MultistepAdam"
   return hparams
 

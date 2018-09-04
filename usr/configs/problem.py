@@ -6,10 +6,34 @@ from __future__ import division
 from __future__ import print_function
 
 from tensor2tensor.data_generators.translate_ende import TranslateEndeWmt32k
+from tensor2tensor.data_generators.lm1b import LanguagemodelLm1b32k
 from tensor2tensor.utils import registry
 from tensor2tensor.data_generators import text_encoder
 from usr import utils as usr_utils
 import os
+
+
+@registry.register_problem
+class TranslateNeenLmgec32k(TranslateEndeWmt32k):
+  @property
+  def vocab_file(self):
+    return "vocab.en.32k"
+
+  def feature_encoders(self, data_dir):
+    vocab_filename = os.path.join(data_dir, self.vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(vocab_filename)}
+
+
+@registry.register_problem
+class LanguagemodelEnLmgec1b32k(LanguagemodelLm1b32k):
+  @property
+  def vocab_file(self):
+    return "vocab.en.32k"
+
+  def feature_encoders(self, data_dir):
+    vocab_filename = os.path.join(data_dir, self.vocab_file)
+    return {"targets": text_encoder.TokenTextEncoder(vocab_filename)}
 
 # Start CF project
 @registry.register_problem
@@ -287,6 +311,21 @@ class TranslateJaenWatOsm32k(TranslateEndeWmt32k):
   def hparams(self, defaults, model_hparams):
     super(TranslateJaenWatOsm32k, self).hparams(defaults, model_hparams)
     usr_utils.look_up_token_id(self._encoders["targets"], "pop_id", "<EOP>", model_hparams)
+
+@registry.register_problem
+class TranslateJaenWatOsmbpeNopop32k(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja.%s" % self.name
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
 
 @registry.register_problem
 class TranslateJaenWatOsmbpe32k(TranslateEndeWmt32k):
