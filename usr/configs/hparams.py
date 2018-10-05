@@ -12,6 +12,30 @@ from tensor2tensor.models.slicenet import slicenet_params1_noam
 
 
 @registry.register_hparams
+def transformer_base_gradout():
+  """Transformer with GradOut loss.
+  
+  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
+  """
+  hparams = transformer_base_v2()
+  hparams.target_modality = "symbol:gradout"
+  return hparams
+
+
+@registry.register_hparams
+def transformer_base_gradout_large_batch():
+  """Transformer with GradOut loss.
+  
+  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
+  """
+  hparams = transformer_base_v2()
+  hparams.target_modality = "symbol:gradout"
+  hparams.optimizer_multistep_accumulate_steps = 8
+  hparams.optimizer = "MultistepAdam"
+  return hparams
+
+
+@registry.register_hparams
 def transformer_base_v2_fake_replicas():
   hparams = transformer_base_v2()
   hparams.learning_rate_warmup_steps *= 8
@@ -23,23 +47,14 @@ def transformer_base_v2_fake_replicas():
 
 @registry.register_hparams
 def transformer_base_v2_large_batch():
-  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
-  
-  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
-  """
   hparams = transformer_base_v2()
   hparams.optimizer_multistep_accumulate_steps = 8
-  #hparams.max_length = 150
   hparams.optimizer = "MultistepAdam"
   return hparams
 
 
 @registry.register_hparams
 def transformer_base_v2_large_batch2():
-  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
-  
-  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
-  """
   hparams = transformer_base_v2()
   hparams.optimizer_multistep_accumulate_steps = 2
   hparams.optimizer = "MultistepAdam"
@@ -48,10 +63,6 @@ def transformer_base_v2_large_batch2():
 
 @registry.register_hparams
 def transformer_base_v2_large_batch4():
-  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
-  
-  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
-  """
   hparams = transformer_base_v2()
   hparams.optimizer_multistep_accumulate_steps = 4
   hparams.optimizer = "MultistepAdam"
@@ -59,10 +70,7 @@ def transformer_base_v2_large_batch4():
 
 @registry.register_hparams
 def transformer_base_v2_large_batch8():
-  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
-  
-  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
-  """
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu."""
   hparams = transformer_base_v2()
   hparams.optimizer_multistep_accumulate_steps = 8
   hparams.optimizer = "MultistepAdam"
@@ -70,10 +78,6 @@ def transformer_base_v2_large_batch8():
 
 @registry.register_hparams
 def transformer_big_large_batch4():
-  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
-  
-  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
-  """
   hparams = transformer_big()
   hparams.batch_size = 2048
   hparams.optimizer_multistep_accumulate_steps = 4
@@ -82,10 +86,6 @@ def transformer_big_large_batch4():
 
 @registry.register_hparams
 def transformer_big_large_batch128():
-  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
-  
-  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
-  """
   hparams = transformer_big()
   hparams.batch_size = 1024
   hparams.optimizer_multistep_accumulate_steps = 128
@@ -94,10 +94,6 @@ def transformer_big_large_batch128():
 
 @registry.register_hparams
 def transformer_relative_big_large_batch4():
-  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
-  
-  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
-  """
   hparams = transformer_relative_big()
   hparams.batch_size = 2048
   hparams.optimizer_multistep_accumulate_steps = 4
@@ -107,10 +103,6 @@ def transformer_relative_big_large_batch4():
 
 @registry.register_hparams
 def transformer_relative_big_large_batch128():
-  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
-  
-  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
-  """
   hparams = transformer_relative_big()
   hparams.batch_size = 1024
   hparams.optimizer_multistep_accumulate_steps = 128
@@ -120,10 +112,6 @@ def transformer_relative_big_large_batch128():
 
 @registry.register_hparams
 def transformer_base_v2_large_batch32():
-  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
-  
-  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
-  """
   hparams = transformer_base_v2()
   hparams.optimizer_multistep_accumulate_steps = 32
   hparams.optimizer = "MultistepAdam"
@@ -139,14 +127,9 @@ def transformer_base_v2_small_lr():
 
 @registry.register_hparams
 def slicenet_large_batch2():
-  """Replication of Vaswani et al., 2017 on a single 12GB gpu.
-  
-  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
-  """
   hparams = slicenet_params1_noam()
   hparams.optimizer_multistep_accumulate_steps = 2
   hparams.optimizer = "MultistepAdam"
-  #hparams.batch_size = 2048
   hparams.batch_size = 4096
   hparams.max_length = 150
   return hparams
