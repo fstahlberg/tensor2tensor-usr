@@ -5,6 +5,8 @@ Extensions to the [Tensor2Tensor framework](https://github.com/tensorflow/tensor
 * Exposes the [TensorFlow NMT tutorial](https://github.com/tensorflow/nmt) to tensor2tensor for strong RNN-based baselines.
 * Implements the [alternating stacked encoder](https://arxiv.org/abs/1606.04199) for RNN models.
 * Additional configurations (hparams and problems) for standard tensor2tensor models.
+* [Simple Fusion](http://arxiv.org/abs/1809.00125) ensembling.
+* GradOut
 
 Installation
 ------------
