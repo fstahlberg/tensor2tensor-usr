@@ -14,6 +14,9 @@ try:
   import usr.models.layerbylayer.hparams
   import usr.models.layerbylayer.problem
   import usr.models.layerbylayer.modalities
+
+  # Ensembles
+  import usr.models.ensemble
   
   # Additional hparams and problems for standard T2T models
   import usr.configs.hparams
@@ -21,6 +24,7 @@ try:
 
   # Additional losses/modalities
   import usr.modalities.gradout
+  import usr.modalities.simplefusion
 except ImportError as e:
   sys.exit("Import error: %s. Double-check that %s is in your PYTHONPATH"
            % (e, os.path.dirname(os.path.realpath(__file__))))

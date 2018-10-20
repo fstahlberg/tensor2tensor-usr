@@ -23,6 +23,62 @@ def transformer_base_gradout():
 
 
 @registry.register_hparams
+def transformer_base_2ens_simplefusion():
+  """Transformer with Simplefusion.
+  
+  Requires the T2T fork from https://github.com/fstahlberg/tensor2tensor
+  """
+  hparams = transformer_base_v2()
+  hparams.target_modality = "symbol:simplefusion"
+  hparams.add_hparam("ensemble_fusion_mode", "share_embeddings") # prenorm, postnorm, share_embeddings
+  hparams.add_hparam("ensemble_hidden_sizes", [512, 512])
+  hparams.hidden_size = 512
+  hparams.add_hparam("ensemble_enabled", [True, True])
+  hparams.add_hparam("ensemble_trainable", [True, True])
+  hparams.add_hparam("ensemble_models", ["transformer", "transformer"])
+  return hparams
+
+
+@registry.register_hparams
+def transformer_base_2ens_share_embeddings_large_batch():
+  hparams = transformer_base_2ens_simplefusion()
+  hparams.ensemble_fusion_mode = "share_embeddings"
+  hparams.ensemble_hidden_sizes = [512, 512]
+  hparams.ensemble_enabled =  [True, False]
+  hparams.ensemble_trainable = [True, True]
+  hparams.hidden_size = 512
+  hparams.optimizer_multistep_accumulate_steps = 8
+  hparams.optimizer = "MultistepAdam"
+  return hparams
+
+
+@registry.register_hparams
+def transformer_base_2ens_prenorm_large_batch():
+  hparams = transformer_base_2ens_simplefusion()
+  hparams.ensemble_fusion_mode = "prenorm"
+  hparams.ensemble_hidden_sizes = [512, 512]
+  hparams.ensemble_enabled =  [True, False]
+  hparams.ensemble_trainable = [True, True]
+  hparams.hidden_size = 1024
+  hparams.optimizer_multistep_accumulate_steps = 8
+  hparams.optimizer = "MultistepAdam"
+  return hparams
+
+
+@registry.register_hparams
+def transformer_base_2ens_postnorm_large_batch():
+  hparams = transformer_base_2ens_simplefusion()
+  hparams.ensemble_fusion_mode = "postnorm"
+  hparams.ensemble_hidden_sizes = [512, 512]
+  hparams.ensemble_enabled =  [True, False]
+  hparams.ensemble_trainable = [True, True]
+  hparams.hidden_size = 1024
+  hparams.optimizer_multistep_accumulate_steps = 8
+  hparams.optimizer = "MultistepAdam"
+  return hparams
+
+
+@registry.register_hparams
 def transformer_base_gradout_large_batch():
   """Transformer with GradOut loss.
   

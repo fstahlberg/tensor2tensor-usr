@@ -349,6 +349,21 @@ class TranslateJaenWatOsmbpeNopop32k(TranslateEndeWmt32k):
     return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
             "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
 
+@registry.register_problem
+class TranslateJaenWatNoosmbpe32k(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja.%s" % self.name
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
 
 @registry.register_problem
 class TranslateJaenWatPushedPreordered32k(TranslateEndeWmt32k):
@@ -365,6 +380,21 @@ class TranslateJaenWatPushedPreordered32k(TranslateEndeWmt32k):
     return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
             "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
 
+
+@registry.register_problem
+class TranslateJaenWatPushed2Preordered32k(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja.%s" % self.name
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.%s" % self.name
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
 
 @registry.register_problem
 class TranslateJaenWatPreordered32k(TranslateEndeWmt32k):
