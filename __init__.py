@@ -17,6 +17,9 @@ try:
 
   # Ensembles
   import usr.models.ensemble
+
+  # Gibbs models
+  import usr.models.gibbs
   
   # Additional hparams and problems for standard T2T models
   import usr.configs.hparams

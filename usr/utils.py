@@ -25,9 +25,11 @@ def _print_data_py(t, msg):
   return sum(t.shape)
 
 
-def print_data(t, msg="", dtype=tf.float32):
+def print_data(t, msg="", dtype=tf.float32, print_t=None):
   """Print shape and content of the tensor for debugging."""
-  add = tf.py_func(_print_data_py, [t, msg], tf.int64)
+  if print_t is None:
+    print_t = t
+  add = tf.py_func(_print_data_py, [print_t, msg], tf.int64)
   shp = t.get_shape()
   ret = t + tf.cast(tf.reduce_max(add) - tf.reduce_max(add), dtype=dtype)
   ret.set_shape(shp)

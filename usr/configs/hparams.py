@@ -12,6 +12,38 @@ from tensor2tensor.models.slicenet import slicenet_params1_noam
 
 
 @registry.register_hparams
+def transformer_bidirectional_large_batch8():
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu."""
+  hparams = transformer_base_v2()
+  hparams.optimizer_multistep_accumulate_steps = 8
+  hparams.optimizer = "MultistepAdam"
+  hparams.num_decoder_layers = 4
+  hparams.label_smoothing = 0.0
+  hparams.add_hparam("num_bidirectional_decoder_joint_layers", 2)
+  return hparams
+
+
+@registry.register_hparams
+def transformer_base_gibbs_large_batch8():
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu."""
+  hparams = transformer_base_v2()
+  hparams.optimizer_multistep_accumulate_steps = 8
+  hparams.add_hparam("gibbs_self_attention_independence_length", 1)
+  hparams.optimizer = "MultistepAdam"
+  hparams.num_decoder_layers = 1
+  hparams.label_smoothing = 0.0
+  return hparams
+
+
+@registry.register_hparams
+def transformer_base_gibbs3_large_batch8():
+  """Replication of Vaswani et al., 2017 on a single 12GB gpu."""
+  hparams = transformer_base_gibbs_large_batch8()
+  hparams.gibbs_self_attention_independence_length = 3
+  return hparams
+
+
+@registry.register_hparams
 def transformer_base_gradout():
   """Transformer with GradOut loss.
   
@@ -40,12 +72,12 @@ def transformer_base_2ens_simplefusion():
 
 
 @registry.register_hparams
-def transformer_base_2ens_share_embeddings_large_batch():
+def transformer_base_2ens_share_embeddings2_large_batch():
   hparams = transformer_base_2ens_simplefusion()
   hparams.ensemble_fusion_mode = "share_embeddings"
   hparams.ensemble_hidden_sizes = [512, 512]
-  hparams.ensemble_enabled =  [True, False]
-  hparams.ensemble_trainable = [True, True]
+  hparams.ensemble_enabled =  [True, True]
+  hparams.ensemble_trainable = [False, True]
   hparams.hidden_size = 512
   hparams.optimizer_multistep_accumulate_steps = 8
   hparams.optimizer = "MultistepAdam"
@@ -53,12 +85,12 @@ def transformer_base_2ens_share_embeddings_large_batch():
 
 
 @registry.register_hparams
-def transformer_base_2ens_prenorm_large_batch():
+def transformer_base_2ens_prenorm2_large_batch():
   hparams = transformer_base_2ens_simplefusion()
   hparams.ensemble_fusion_mode = "prenorm"
   hparams.ensemble_hidden_sizes = [512, 512]
-  hparams.ensemble_enabled =  [True, False]
-  hparams.ensemble_trainable = [True, True]
+  hparams.ensemble_enabled =  [True, True]
+  hparams.ensemble_trainable = [False, True]
   hparams.hidden_size = 1024
   hparams.optimizer_multistep_accumulate_steps = 8
   hparams.optimizer = "MultistepAdam"
@@ -66,12 +98,12 @@ def transformer_base_2ens_prenorm_large_batch():
 
 
 @registry.register_hparams
-def transformer_base_2ens_postnorm_large_batch():
+def transformer_base_2ens_postnorm2_large_batch():
   hparams = transformer_base_2ens_simplefusion()
   hparams.ensemble_fusion_mode = "postnorm"
   hparams.ensemble_hidden_sizes = [512, 512]
-  hparams.ensemble_enabled =  [True, False]
-  hparams.ensemble_trainable = [True, True]
+  hparams.ensemble_enabled =  [True, True]
+  hparams.ensemble_trainable = [False, True]
   hparams.hidden_size = 1024
   hparams.optimizer_multistep_accumulate_steps = 8
   hparams.optimizer = "MultistepAdam"
