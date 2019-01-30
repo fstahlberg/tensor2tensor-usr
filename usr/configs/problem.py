@@ -12,6 +12,34 @@ from tensor2tensor.data_generators import text_encoder
 from usr import utils as usr_utils
 import os
 
+# START WMT19 ------------------------------------------------
+
+# Base En-De model definition. Do not use directl
+@registry.register_problem
+class TranslateEndeWmt19(TranslateEndeWmt32k):
+
+  @property
+  def src_vocab_file(self):
+    return "vocab.ende.wmt18"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.ende.wmt18"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+# No paracrawl, no backtranslation
+@registry.register_problem
+class TranslateEndeWmt19Base(TranslateEndeWmt19):
+  pass
+
+
+
+# END WMT19 ------------------------------------------------
+
 
 @registry.register_problem
 class TranslateNeenLmgec32k(TranslateEndeWmt32k):
