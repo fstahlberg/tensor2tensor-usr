@@ -9,21 +9,84 @@ from tensor2tensor.data_generators.translate_ende import TranslateEndeWmt32k
 from tensor2tensor.data_generators.lm1b import LanguagemodelLm1b32k
 from tensor2tensor.utils import registry
 from tensor2tensor.data_generators import text_encoder
+from tensor2tensor.data_generators.problem import preprocess_example_common
 from usr import utils as usr_utils
 import os
 
+import tensorflow as tf
+import numpy as np
+import random
+
 # START WMT19 ------------------------------------------------
 
-# Base En-De model definition. Do not use directl
+# LM
+
+# Base LM problem definition. Do not use directly
+@registry.register_problem
+class LanguagemodelEnWmt19(LanguagemodelLm1b32k):
+  @property
+  def vocab_file(self):
+    return "vocab.ende.wmt19"
+
+  def feature_encoders(self, data_dir):
+    vocab_filename = os.path.join(data_dir, self.vocab_file)
+    return {"targets": text_encoder.TokenTextEncoder(vocab_filename)}
+
+
+# news2016-2018
+@registry.register_problem
+class LanguagemodelDeWmt19News1618(LanguagemodelEnWmt19):
+  pass
+
+@registry.register_problem
+class LanguagemodelEnWmt19News1618(LanguagemodelEnWmt19):
+  pass
+
+
+# Document-level news2016-2018 (glued with <s>)
+@registry.register_problem
+class LanguagemodelGlueDeWmt19News1618(LanguagemodelEnWmt19):
+  pass
+
+
+# Document-level news2016-2018 (glued with <s>, with targets_segmentation)
+@registry.register_problem
+class LanguagemodelGlueSegDeWmt19News1618(LanguagemodelEnWmt19):
+  def example_reading_spec(self):
+    data_fields = {
+      "targets": tf.VarLenFeature(tf.int64),
+      "targets_pos": tf.VarLenFeature(tf.int64),
+      "targets_seg": tf.VarLenFeature(tf.int64),
+    }
+    data_items_to_decoders = None
+    return (data_fields, data_items_to_decoders)
+
+
+# Document-level news2016-2018 (glued with <s>, with targets_segmentation)
+@registry.register_problem
+class LanguagemodelGlueSegEnWmt19News1618(LanguagemodelEnWmt19):
+  def example_reading_spec(self):
+    data_fields = {
+      "targets": tf.VarLenFeature(tf.int64),
+      "targets_pos": tf.VarLenFeature(tf.int64),
+      "targets_seg": tf.VarLenFeature(tf.int64),
+    }
+    data_items_to_decoders = None
+    return (data_fields, data_items_to_decoders)
+
+
+# TM
+
+# Base En-De problem definition. Do not use directly
 @registry.register_problem
 class TranslateEndeWmt19(TranslateEndeWmt32k):
 
   @property
   def src_vocab_file(self):
-    return "vocab.ende.wmt18"
+    return "vocab.ende.wmt19"
   @property
   def trg_vocab_file(self):
-    return "vocab.ende.wmt18"
+    return "vocab.ende.wmt19"
 
   def feature_encoders(self, data_dir):
     src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
@@ -31,14 +94,345 @@ class TranslateEndeWmt19(TranslateEndeWmt32k):
     return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
             "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
 
+
 # No paracrawl, no backtranslation
 @registry.register_problem
 class TranslateEndeWmt19Base(TranslateEndeWmt19):
   pass
 
 
+@registry.register_problem
+class TranslateDeenWmt19Base(TranslateEndeWmt19):
+  pass
+
+
+# Full paracrawl, 4x oversampling, no backtranslation
+@registry.register_problem
+class TranslateEndeWmt19FullpcOs4(TranslateEndeWmt19):
+  pass
+
+
+# Naively (WMT18) filtered paracrawl, no oversampling, no backtranslation
+@registry.register_problem
+class TranslateEndeWmt19Naivepc(TranslateEndeWmt19):
+  pass
+
+
+# Naively (WMT18) filtered paracrawl, 2x oversampling, no backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs2(TranslateEndeWmt19):
+  pass
+
+
+# ms-filtered paracrawl 5M, no backtranslation
+@registry.register_problem
+class TranslateEndeWmt19Mspc5(TranslateEndeWmt19):
+  pass
+
+# ms-filtered paracrawl 8M, no backtranslation
+@registry.register_problem
+class TranslateEndeWmt19Mspc8(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) ms-filtered paracrawl 15M, no backtranslation
+@registry.register_problem
+class TranslateEndeWmt19Msnaivepc15(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) ms-filtered paracrawl 10M, no backtranslation
+@registry.register_problem
+class TranslateEndeWmt19Msnaivepc10(TranslateEndeWmt19):
+  pass
+
+
+# ms-filtered paracrawl 10M, 2x oversampling, no backtranslation
+@registry.register_problem
+class TranslateEndeWmt19Mspc10Os2(TranslateEndeWmt19):
+  pass
+
+# ms-filtered paracrawl 15M, 2x oversampling, no backtranslation
+@registry.register_problem
+class TranslateEndeWmt19Mspc15Os2(TranslateEndeWmt19):
+  pass
+
+
+# Naively (WMT18) filtered paracrawl, no oversampling, news2017 backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcBt17(TranslateEndeWmt19):
+  pass
+
+
+# Naively (WMT18) filtered paracrawl, 2x oversampling, news2017 backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs2Bt17(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) filtered paracrawl, 2x oversampling, news2018 backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs2Bt18(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) 2x filtered paracrawl, 3x rest, news2018 backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs32Bt18(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) filtered paracrawl, 2x oversampling, news2017-2018 backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs2Bt1718(TranslateEndeWmt19):
+  pass
+
+
+# Naively (WMT18) filtered paracrawl, 2x oversampling, news2017 FBNoise backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs2Fbnoisebt17(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) filtered paracrawl, 2x oversampling, news2018 FBNoise backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs2Fbnoisebt18(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) filtered paracrawl, 2x oversampling, news2017+2018 FBNoise backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs2Fbnoisebt1718(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) 2x filtered paracrawl, 3x oversampling rest, news2017+2018 FBNoise backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs32Fbnoisebt1718(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) 2x filtered paracrawl, 3x oversampling rest, news2016+2017 FBNoise backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs32Fbnoisebt1617(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) 2x filtered paracrawl, 3x oversampling rest, news2016+2017+2018 FBNoise backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs32Fbnoisebt1618(TranslateEndeWmt19):
+  pass
+
+
+
+
+# Naively (WMT18) 2x filtered paracrawl, 3x oversampling rest, news2016+2017+2018 FBNoise filtered backtranslation
+@registry.register_problem
+class TranslateEndeWmt19NaivepcOs32Fbnoisebtfilt1618(TranslateEndeWmt19):
+  pass
+
+# Naively (WMT18) 2x filtered paracrawl, 3x oversampling rest, news2016+2017+2018 FBNoise filtered backtranslation
+@registry.register_problem
+class TranslateDeenWmt19NaivepcOs32Fbnoisebtfilt1618(TranslateEndeWmt19):
+  pass
+
+# 2x Naively (WMT18) and MS-15M filtered paracrawl, 3x oversampling rest, news2016+2017+2018 FBNoise filtered backtranslation
+@registry.register_problem
+class TranslateEndeWmt19Msnaivepc15Os32Fbnoisebtfilt1618(TranslateEndeWmt19):
+  pass
+
+# 2x Naively (WMT18) and MS-15M filtered paracrawl, 3x oversampling rest, news2016+2017+2018 FBNoise filtered backtranslation
+@registry.register_problem
+class TranslateDeenWmt19Msnaivepc15Os32Fbnoisebtfilt1618(TranslateEndeWmt19):
+  pass
+
+# WMT08-17 test sets
+@registry.register_problem
+class TranslateEndeWmt19Newstest0817(TranslateEndeWmt19):
+  pass
+
+@registry.register_problem
+class TranslateDeenWmt19Newstest0817(TranslateEndeWmt19):
+  pass
+
+# WMT08-16 test sets
+@registry.register_problem
+class TranslateEndeWmt19Newstest0816(TranslateEndeWmt19):
+  pass
+
+@registry.register_problem
+class TranslateDeenWmt19Newstest0816(TranslateEndeWmt19):
+  pass
+
+
 
 # END WMT19 ------------------------------------------------
+
+# START GEC19 OSM -------------------------------------------
+
+@registry.register_problem
+class TranslateNeenGec19(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.gec19"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.gec19"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TranslateNeenGec19Osm(TranslateNeenGec19):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19Aposm(TranslateNeenGec19):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19Cposm(TranslateNeenGec19):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19Apcposm(TranslateNeenGec19):
+  pass
+
+# START GEC19 ------------------------------------------------
+
+# LM
+
+@registry.register_problem
+class LanguagemodelEnGec19Unsupervised(LanguagemodelLm1b32k):
+  @property
+  def vocab_file(self):
+    return "vocab.en.gec19.unsupervised"
+
+  def feature_encoders(self, data_dir):
+    vocab_filename = os.path.join(data_dir, self.vocab_file)
+    return {"targets": text_encoder.TokenTextEncoder(vocab_filename)}
+
+@registry.register_problem
+class LanguagemodelEnGec19UnsupervisedChar(LanguagemodelLm1b32k):
+  @property
+  def vocab_file(self):
+    return "vocab.en.gec19.unsupervised.char"
+
+  def feature_encoders(self, data_dir):
+    vocab_filename = os.path.join(data_dir, self.vocab_file)
+    return {"targets": text_encoder.TokenTextEncoder(vocab_filename)}
+
+# TM
+
+@registry.register_problem
+class TranslateNeenGec19Supervised(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.en.gec19.supervised"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en.gec19.supervised"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TranslateNeenGec19SupervisedLocness4(TranslateNeenGec19Supervised):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19SupervisedLocness4Noid(TranslateNeenGec19Supervised):
+  pass
+
+# Backtranslation
+@registry.register_problem
+class TranslateNeenGec19SupervisedLocness4NoidBt1(TranslateNeenGec19Supervised):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19SupervisedLocness4NoidBt3(TranslateNeenGec19Supervised):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19SupervisedLocness4NoidBt5(TranslateNeenGec19Supervised):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19SupervisedLocness4NoidOs3Bt3(TranslateNeenGec19Supervised):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19SupervisedLocness4NoidOs6Bt5(TranslateNeenGec19Supervised):
+  pass
+
+
+
+@registry.register_problem
+class TranslateEnneGec19SupervisedLocness4Noid(TranslateNeenGec19Supervised):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19SupervisedLocness8(TranslateNeenGec19Supervised):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19SupervisedLocnessonly(TranslateNeenGec19Supervised):
+  pass
+
+# END GEC19 ------------------------------------------------
+
+
+ratio_desired_mean = 3.0
+
+def norm_pdf(x, mu=0.0, sigma=2.0):
+  return 1.0 / (sigma * np.sqrt(2 * np.pi)) * np.exp(-(x - mu)**2 / (2 * sigma**2))
+
+def _filter_by_ratio_py(inputs, targets):
+  global ratio_desired_mean
+  u = random.random()
+  ratio = float(targets.shape[0]) / float(inputs.shape[0])
+  threshold = norm_pdf(ratio, ratio_desired_mean) / norm_pdf(ratio_desired_mean, ratio_desired_mean)
+  #print("%f > %f (%f, %f)" % (threshold, u, ratio_desired_mean, ratio))
+  return threshold > u
+
+def filter_by_ratio(example):
+  #return tf.shape(example["inputs"])[0] > tf.shape(example["targets"])
+  return tf.py_func(_filter_by_ratio_py, [example["inputs"],example["targets"]], tf.bool)
+
+@registry.register_problem
+class TranslateDeenWmt19BaseLtOld(TranslateEndeWmt19):
+
+  def preprocess_example(self, example, mode, hparams):
+    """Runtime preprocessing.
+
+    Return a dict or a tf.Data.Datset.from_tensor_slices (if you want each
+    example to turn into multiple).
+
+    Args:
+      example: dict, features
+      mode: tf.estimator.ModeKeys
+      hparams: HParams, model hyperparameters
+
+    Returns:
+      dict or Dataset
+    """
+    example = preprocess_example_common(example, hparams, mode)
+    if mode == tf.estimator.ModeKeys.TRAIN:
+      #example["inputs"] = usr_utils.print_shape(example["inputs"], "inputs", dtype=tf.int64)
+      dataset = tf.data.Dataset.from_tensors(example)
+      filtered = dataset.filter(filter_by_ratio)
+      tf.logging.info("Filter by length!")
+      return filtered
+    return example
+
+
+
+@registry.register_problem
+class TranslateEnenGec32k(TranslateEndeWmt32k):
+  @property
+  def vocab_file(self):
+    return "vocab.en.32k.idx"
+
+  def feature_encoders(self, data_dir):
+    vocab_filename = os.path.join(data_dir, self.vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(vocab_filename)}
 
 
 @registry.register_problem

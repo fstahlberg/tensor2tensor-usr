@@ -25,15 +25,27 @@ class Ensemble(t2t_model.T2TModel):
     super(Ensemble, self).__init__(*args, **kwargs)
     self._sanity_check()
     self._models = []
-    for model_name, hidden_size in zip(self._hparams.ensemble_models,
-                                       self._hparams.ensemble_hidden_sizes):
+    for model_name, is_lm, hidden_size in zip(self._hparams.ensemble_models,
+                                              self._hparams.ensemble_is_lm,
+                                              self._hparams.ensemble_hidden_sizes):
       this_args = copy.deepcopy(org_args)
       this_kwargs = copy.deepcopy(org_kwargs)
       if hasattr(this_args[0], "problem_hparams"):
         this_args[0].problem_hparams = None
       this_kwargs["problem_hparams"] = None
       this_args[0].hidden_size = hidden_size
-      self._models.append(registry.model(model_name)(*this_args, **this_kwargs))
+      model_class = registry.model(model_name)
+      if is_lm:
+        class ModelWithoutInput(model_class):
+          # This hack is necessary because has_input() always returns
+          # true if no problem hparams are provided
+          @property
+          def has_input(self):
+            return False
+        model = ModelWithoutInput(*this_args, **this_kwargs)
+      else:
+        model = model_class(*this_args, **this_kwargs)
+      self._models.append(model)
   
   def _sanity_check(self):
     if self._hparams.ensemble_fusion_mode == "share_embeddings":
@@ -52,15 +64,21 @@ class Ensemble(t2t_model.T2TModel):
   def body(self, features):
     if self._hparams.ensemble_fusion_mode == "share_embeddings":    
       return self.body_shared_embeddings(features)
-    inputs = features["inputs"]
+    has_inputs = "inputs" in features
+    if has_inputs:
+      inputs = features["inputs"]
+    else:
+      tf.logging.info("Ensemble does not have inputs.")
     targets = features["targets"]
     body_outs = []
     pos = 0
-    for i, (model, hidden_size) in enumerate(zip(
+    for i, (model, is_lm, hidden_size) in enumerate(zip(
             self._models, 
+            self._hparams.ensemble_is_lm,
             self._hparams.ensemble_hidden_sizes)):
       with tf.variable_scope("ens_model_%d" % i):
-        features["inputs"] = inputs[:, :, :, pos:pos+hidden_size] 
+        if has_inputs:
+          features["inputs"] = inputs[:, :, :, pos:pos+hidden_size] 
         features["targets"] = targets[:, :, :, pos:pos+hidden_size]
         body_outs.append(model.body(features))
         pos += hidden_size

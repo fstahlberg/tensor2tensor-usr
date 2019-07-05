@@ -37,6 +37,7 @@ def tfnmt_base():
   hparams.add_hparam("unit_type", "lstm")
   hparams.add_hparam("residual", False)
   hparams.add_hparam("pass_hidden_state", True)
+  hparams.symbol_modality_num_shards = 16  # backwards compatibility
   return hparams
 
 

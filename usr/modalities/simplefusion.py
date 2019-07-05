@@ -20,9 +20,6 @@ def log_prob_from_logits(logits):
 class SymbolModalitySimpleFusion(modalities.SymbolModality):
   """SymbolModality with Simple Fusion combination scheme."""
 
-  #def __init__(self, model_hparams, vocab_size=None):
-  #  super(SymbolModalitySimpleFusion, self).__init__(model_hparams, vocab_size)
-    
   def fusion_mode(self):
     try:
       mode = self._model_hparams.ensemble_fusion_mode
@@ -48,10 +45,14 @@ class SymbolModalitySimpleFusion(modalities.SymbolModality):
     for model_id in model_ids:
       model_hidden_size = self._model_hparams.ensemble_hidden_sizes[model_id]
       var_name = "ens_weights_%d" % model_id
-      shards.append(
-        tf.get_variable(
+      model_embed_matrix = tf.get_variable(
           var_name, [self._vocab_size, model_hidden_size],
-          initializer=tf.random_normal_initializer(0.0, model_hidden_size**-0.5)))
+          initializer=tf.random_normal_initializer(0.0, model_hidden_size**-0.5))
+      if not self._model_hparams.ensemble_enabled[model_id]:
+        model_embed_matrix = model_embed_matrix * 0.0  # Disabled, but variables are still created
+      if not self._model_hparams.ensemble_trainable[model_id]:
+        model_embed_matrix = tf.stop_gradient(model_embed_matrix)
+      shards.append(model_embed_matrix)
     if len(shards) == 1:
       return shards[0]
     ret = tf.concat(shards, 1)
@@ -93,10 +94,10 @@ class SymbolModalitySimpleFusion(modalities.SymbolModality):
           projected = tf.matmul(body_output[:, pos:pos+hidden_size], 
                                 self._get_weights(model_id=model_id), 
                                 transpose_b=True)
-          if not enabled:
-            projected *= 0.0  # Disabled, but variables are still created
           if self.fusion_mode() == "postnorm":
             projected = log_prob_from_logits(projected)
+          if not enabled:
+            projected = projected * 0.0  # Disabled, but variables are still created
           if not trainable:
             projected = tf.stop_gradient(projected)
           if logits is None:
