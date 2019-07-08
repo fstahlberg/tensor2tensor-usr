@@ -258,6 +258,68 @@ class TranslateDeenWmt19Newstest0816(TranslateEndeWmt19):
 
 # END WMT19 ------------------------------------------------
 
+# START TEXTNORM --------------------------------------------------
+
+@registry.register_problem
+class TextnormEnEnnennopop(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.en"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en-nen"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TextnormEneopEnnennopop(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.en"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en-nen"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TextnormEneopEnnen(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.en"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en-nen"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TextnormEneopNen(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.en"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.nen"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
 # START GEC19 OSM -------------------------------------------
 
 @registry.register_problem
