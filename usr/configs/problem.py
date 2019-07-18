@@ -260,6 +260,8 @@ class TranslateDeenWmt19Newstest0816(TranslateEndeWmt19):
 
 # START TEXTNORM --------------------------------------------------
 
+# English
+
 @registry.register_problem
 class TextnormEnEnnennopop(TranslateEndeWmt32k):
   @property
@@ -388,6 +390,69 @@ class TextnormCeneopNen(TranslateEndeWmt32k):
   @property
   def trg_vocab_file(self):
     return "vocab.nen"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+# Russian
+
+@registry.register_problem
+class TextnormCruCrunrunopop(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.cru"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.cru-nru"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TextnormCrueopCrunrunopop(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.cru"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.cru-nru"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+
+@registry.register_problem
+class TextnormCrueopCrunru(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.cru"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.cru-nru"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TextnormCrueopNru(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.cru"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.nru"
 
   def feature_encoders(self, data_dir):
     src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
