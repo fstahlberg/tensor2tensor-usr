@@ -486,6 +486,14 @@ class TranslateNeenGec19Aposm(TranslateNeenGec19):
   pass
 
 @registry.register_problem
+class TranslateNeenGec19Mosm(TranslateNeenGec19):
+  pass
+
+@registry.register_problem
+class TranslateNeenGec19Maposm(TranslateNeenGec19):
+  pass
+
+@registry.register_problem
 class TranslateNeenGec19Cposm(TranslateNeenGec19):
   pass
 
