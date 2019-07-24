@@ -258,6 +258,42 @@ class TranslateDeenWmt19Newstest0816(TranslateEndeWmt19):
 
 # END WMT19 ------------------------------------------------
 
+# START WAT OSM --------------------------------------------------
+
+@registry.register_problem
+class TranslateJaenOsmwatPlain(TranslateEndeWmt32k):
+  @property
+  def src_vocab_file(self):
+    return "vocab.ja"
+  @property
+  def trg_vocab_file(self):
+    return "vocab.en"
+
+  def feature_encoders(self, data_dir):
+    src_vocab_filename = os.path.join(data_dir, self.src_vocab_file)
+    trg_vocab_filename = os.path.join(data_dir, self.trg_vocab_file)
+    return {"inputs": text_encoder.TokenTextEncoder(src_vocab_filename), 
+            "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
+
+@registry.register_problem
+class TranslateJaenOsmwatOsm(TranslateJaenOsmwatPlain):
+  pass
+
+@registry.register_problem
+class TranslateJaenOsmwatEosm(TranslateJaenOsmwatPlain):
+  pass
+
+@registry.register_problem
+class TranslateJaenOsmwatPosm(TranslateJaenOsmwatPlain):
+  pass
+
+@registry.register_problem
+class TranslateJaenOsmwatEposm(TranslateJaenOsmwatPlain):
+  pass
+
+
+# END WAT OSM --------------------------------------------------
+
 # START TEXTNORM --------------------------------------------------
 
 # English
