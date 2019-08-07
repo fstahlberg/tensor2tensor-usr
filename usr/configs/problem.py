@@ -322,6 +322,10 @@ class TranslateJa2ja2OsmwatOsm(TranslateEndeWmt32k):
             "targets": text_encoder.TokenTextEncoder(trg_vocab_filename)}
 
 @registry.register_problem
+class TranslateJa2ja2OsmwatOsm2(TranslateJa2ja2OsmwatOsm):
+  pass
+
+@registry.register_problem
 class TranslateJa2ja2OsmwatEosm(TranslateJa2ja2OsmwatOsm):
   pass
 
@@ -350,6 +354,10 @@ class TranslatePreorderedJa2enOsmwatEosm(TranslatePreorderedJa2enOsmwatOsm):
 
 @registry.register_problem
 class TranslatePreorderedJa2enOsmwatPosm(TranslatePreorderedJa2enOsmwatOsm):
+  pass
+
+@registry.register_problem
+class TranslateIterpreorderedJa2enOsmwatPosm(TranslatePreorderedJa2enOsmwatOsm):
   pass
 
 
