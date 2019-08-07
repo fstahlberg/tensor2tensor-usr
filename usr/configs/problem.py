@@ -357,7 +357,7 @@ class TranslatePreorderedJa2enOsmwatPosm(TranslatePreorderedJa2enOsmwatOsm):
   pass
 
 @registry.register_problem
-class TranslateIterpreorderedJa2enOsmwatPosm(TranslatePreorderedJa2enOsmwatOsm):
+class TranslateIterpreorderedJa2enOsmwatOsm(TranslatePreorderedJa2enOsmwatOsm):
   pass
 
 
