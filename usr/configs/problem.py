@@ -326,6 +326,10 @@ class TranslateJa2ja2OsmwatOsm2(TranslateJa2ja2OsmwatOsm):
   pass
 
 @registry.register_problem
+class TranslateJa2ja2OsmwatOsm3(TranslateJa2ja2OsmwatOsm):
+  pass
+
+@registry.register_problem
 class TranslateJa2ja2OsmwatEosm(TranslateJa2ja2OsmwatOsm):
   pass
 
@@ -358,6 +362,10 @@ class TranslatePreorderedJa2enOsmwatPosm(TranslatePreorderedJa2enOsmwatOsm):
 
 @registry.register_problem
 class TranslateIterpreorderedJa2enOsmwatOsm(TranslatePreorderedJa2enOsmwatOsm):
+  pass
+
+@registry.register_problem
+class TranslateIterpreordered2Ja2enOsmwatOsm(TranslatePreorderedJa2enOsmwatOsm):
   pass
 
 
