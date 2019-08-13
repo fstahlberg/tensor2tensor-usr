@@ -368,6 +368,10 @@ class TranslateIterpreorderedJa2enOsmwatOsm(TranslatePreorderedJa2enOsmwatOsm):
 class TranslateIterpreordered2Ja2enOsmwatOsm(TranslatePreorderedJa2enOsmwatOsm):
   pass
 
+@registry.register_problem
+class TranslateIterpreordered3Ja2enOsmwatOsm(TranslatePreorderedJa2enOsmwatOsm):
+  pass
+
 
 # END WAT OSM --------------------------------------------------
 
